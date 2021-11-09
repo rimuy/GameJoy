@@ -1,0 +1,28 @@
+{
+	"name": "roblox-ts-tests",
+	"globIgnorePaths": [
+		"**/package.json",
+		"**/tsconfig.json"
+	],
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"include": {
+				"$path": "include",
+				"node_modules": {
+					"$path": "node_modules/@rbxts"
+				}
+			}
+		},
+		"ServerScriptService": {
+			"$className": "ServerScriptService",
+			"testBootstrap": {
+				"$path": "out/testBootstrap.server.lua"
+			},
+			"Tests": {
+				"$path": "out/Tests"
+			}
+		}
+	}
+}
