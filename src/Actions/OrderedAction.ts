@@ -15,11 +15,11 @@ export class OrderedAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: Array<A | ActionEntry<A> | Array<A | ActionEntry<A>>>) {
 		super();
 
-		const rawActions = RawAction.filter((action) => 
-			!t.isAction(action) || !t.ActionEntryIs(action, "OptionalAction")
+		const rawActions = RawAction.filter(
+			(action) => !t.isAction(action) || !t.ActionEntryIs(action, "OptionalAction"),
 		);
 
-		const queue = this.queue = Vec.withCapacity(rawActions.size());
+		const queue = (this.queue = Vec.withCapacity(rawActions.size()));
 		let canCancel = false;
 
 		ActionConnection.From(this).Changed(() => {
@@ -40,7 +40,7 @@ export class OrderedAction<A extends RawActionEntry> extends BaseAction {
 				}
 			}
 
-			this.IsPressed && this.SetTriggered(canCancel = false);
+			this.IsPressed && this.SetTriggered((canCancel = false));
 		});
 
 		const conn = this.Connected.Connect(() => {
@@ -63,7 +63,7 @@ export class OrderedAction<A extends RawActionEntry> extends BaseAction {
 
 				connection.Released(() => {
 					const index = queue.asPtr().findIndex((e) => e === entry);
-					(began && index >= 0) && queue.remove(index);
+					began && index >= 0 && queue.remove(index);
 					began = false;
 
 					if (canCancel) {

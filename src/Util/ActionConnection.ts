@@ -6,86 +6,89 @@ import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 import * as t from "./TypeChecks";
 
 function checkInputs(
-        action: ActionEntry,
-        { KeyCode, UserInputType }: InputObject,
-        processed: boolean,
-        callback: (processed: boolean) => void,
+	action: ActionEntry,
+	{ KeyCode, UserInputType }: InputObject,
+	processed: boolean,
+	callback: (processed: boolean) => void,
 ) {
-        const context = action.Context;
-        
-        if (context) {
-                const { Options: { Process } } = context;
+	const context = action.Context;
 
-                const RawAction = action.RawAction as RawActionEntry;
-        
-                if (
-                        t.isActionEqualTo(RawAction, KeyCode, UserInputType) &&
-                        (Process === undefined || Process === processed)
-                ) {
-                        callback(processed);
-                }
-        }
+	if (context) {
+		const {
+			Options: { Process },
+		} = context;
+
+		const RawAction = action.RawAction as RawActionEntry;
+
+		if (
+			t.isActionEqualTo(RawAction, KeyCode, UserInputType) &&
+			(Process === undefined || Process === processed)
+		) {
+			callback(processed);
+		}
+	}
 }
 
 export class ActionConnection {
-        private bin;
+	private bin;
 
-        private constructor(private action: ActionEntry) {
-                this.bin = new Bin();
+	private constructor(private action: ActionEntry) {
+		this.bin = new Bin();
 
-                const conn = action.Destroyed.Connect(() => {
-                        conn.Disconnect();
+		const conn = action.Destroyed.Connect(() => {
+			conn.Disconnect();
 
-                        this.bin.destroy();
-                        this.action.SetContext(undefined);
-                });
-        }
+			this.bin.destroy();
+			this.action.SetContext(undefined);
+		});
+	}
 
-        private Connect(signal: Signal, callback: (...args: Array<any>) => void) {
-                this.bin.add(signal.Connect(callback));
-        }
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	private Connect(signal: Signal, callback: (...args: Array<any>) => void) {
+		this.bin.add(signal.Connect(callback));
+	}
 
-        static From(action: ActionEntry) {
-                return new ActionConnection(action);
-        }
+	static From(action: ActionEntry) {
+		return new ActionConnection(action);
+	}
 
-        Began(callback: (processed?: boolean) => void) {
-                this.bin.add(
-                        IS.InputBegan.Connect((input, processed) => 
-                                checkInputs(this.action, input, processed, callback)
-                        )
-                );
-        }
+	Began(callback: (processed?: boolean) => void) {
+		this.bin.add(
+			IS.InputBegan.Connect((input, processed) =>
+				checkInputs(this.action, input, processed, callback),
+			),
+		);
+	}
 
-        Ended(callback: (processed?: boolean) => void) {
-                this.bin.add(
-                        IS.InputEnded.Connect((input, processed) => 
-                                checkInputs(this.action, input, processed, callback)
-                        )
-                );
-        }
+	Ended(callback: (processed?: boolean) => void) {
+		this.bin.add(
+			IS.InputEnded.Connect((input, processed) =>
+				checkInputs(this.action, input, processed, callback),
+			),
+		);
+	}
 
-        Destroyed(callback: () => void) {
-                this.Connect(this.action.Destroyed, callback);
-        }
+	Destroyed(callback: () => void) {
+		this.Connect(this.action.Destroyed, callback);
+	}
 
-        Triggered(callback: (processed?: boolean) => void) {
-                this.Connect(this.action.Triggered, callback);
-        }
+	Triggered(callback: (processed?: boolean) => void) {
+		this.Connect(this.action.Triggered, callback);
+	}
 
-        Released(callback: (processed?: boolean) => void) {
-                this.Connect(this.action.Released, callback);
-        }
+	Released(callback: (processed?: boolean) => void) {
+		this.Connect(this.action.Released, callback);
+	}
 
-        Changed(callback: () => void) {
-                this.Connect(this.action.Changed, callback);
-        }
+	Changed(callback: () => void) {
+		this.Connect(this.action.Changed, callback);
+	}
 
-        Cancelled(callback: () => void) {
-                this.Connect(this.action.Cancelled, callback);
-        }
+	Cancelled(callback: () => void) {
+		this.Connect(this.action.Cancelled, callback);
+	}
 
-        Destroy() {
-                this.action.Destroyed.Fire();
-        }
+	Destroy() {
+		this.action.Destroyed.Fire();
+	}
 }

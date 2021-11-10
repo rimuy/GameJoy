@@ -4,24 +4,11 @@ import { Context as GContext } from "./Class/Context";
 import * as GActions from "./Actions";
 import * as Checks from "./Util/TypeChecks";
 
-import {
-	ActionEntry,
-	ContextOptions,
-	InferEnumItemName,
-	RawActionEntry,
-	RawActionLike,
-} from "./Definitions/Types";
-
+import { ActionEntry, ContextOptions, InferEnumItemName, RawActionEntry, RawActionLike } from "./Definitions/Types";
 
 // Utility Types
 declare namespace GameJoy {
-	export {
-		ActionEntry,
-		ContextOptions,
-		InferEnumItemName,
-		RawActionEntry,
-		RawActionLike,
-	};
+	export { ActionEntry, ContextOptions, InferEnumItemName, RawActionEntry, RawActionLike };
 }
 
 namespace GameJoy {

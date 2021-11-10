@@ -17,6 +17,6 @@
 		"outDir": "out",
 		"baseUrl": "../src",
 		"incremental": false,
-		"declaration": true
+		"declaration": false
 	}
 }

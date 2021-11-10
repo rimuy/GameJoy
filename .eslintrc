@@ -5,7 +5,7 @@
 		"useJSXTextNode": true,
 		"ecmaVersion": 2018,
 		"sourceType": "module",
-		"project": "./tsconfig.json"
+		"project": ["./tsconfig.json", "./tests/tsconfig.json"]
 	},
 	"plugins": [
 		"@typescript-eslint",
@@ -29,6 +29,7 @@
 				"useTabs": true
 			}
 		],
-		"roblox-ts/no-array-ipairs": false
+		"roblox-ts/no-array-pairs": "off",
+		"roblox-ts/no-namespace-merging": "off"
 	}
 }
