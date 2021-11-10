@@ -11,17 +11,17 @@
 			"include": {
 				"$path": "include",
 				"node_modules": {
-					"$path": "./node_modules/@rbxts"
+					"$path": "node_modules/@rbxts"
 				}
 			}
 		},
 		"ServerScriptService": {
 			"$className": "ServerScriptService",
 			"testBootstrap": {
-				"$path": "./out/testBootstrap.server.lua"
+				"$path": "out/testBootstrap"
 			},
 			"Tests": {
-				"$path": "./out/Tests"
+				"$path": "out/Tests"
 			}
 		}
 	}
