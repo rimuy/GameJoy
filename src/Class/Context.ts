@@ -14,7 +14,7 @@ const { ok: Ok, err: Err } = Result;
 
 const RAW_ACTION_REMOVAL_ERROR = "An error ocurred while trying to remove a raw action.";
 
-const defaultOptions: ContextOptions = {
+const defaultOptions: Required<Omit<ContextOptions, "Process">> = {
 	OnBefore: () => true,
 	RunSynchronously: false,
 };
@@ -28,7 +28,7 @@ export class Context<O extends ContextOptions> {
 
 	private rawActions: HashMap<ActionKey, ActionEntry>;
 
-	constructor(public readonly Options: O) {
+	constructor(public readonly Options?: O) {
 		if (!RunService.IsClient()) {
 			error(
 				debug.traceback(
@@ -44,9 +44,8 @@ export class Context<O extends ContextOptions> {
 	}
 
 	private ConnectAction<A extends RawActionEntry>(action: ActionEntry<A>) {
-		const {
-			Options: { RunSynchronously, OnBefore },
-		} = this;
+		const options = { ...defaultOptions, ...this.Options };
+		const { RunSynchronously, OnBefore } = options;
 
 		action.SetContext(this);
 
@@ -55,7 +54,7 @@ export class Context<O extends ContextOptions> {
 				.get(action)
 				.expect("An error occurred while trying to unwrap action.");
 
-			if (OnBefore!() === true) {
+			if (OnBefore() === true) {
 				if (RunSynchronously === true) listener();
 				else this.queue.Add(action, listener);
 			}
@@ -80,9 +79,6 @@ export class Context<O extends ContextOptions> {
 		return this.actions.containsKey(action);
 	}
 
-	/**
-	 * @client
-	 */
 	Bind<R extends RawActionEntry, A extends ActionEntry<R>>(
 		action: A | R | Array<A | R>,
 		listener: () => void | Promise<void>,
@@ -109,9 +105,6 @@ export class Context<O extends ContextOptions> {
 		return this;
 	}
 
-	/**
-	 * @client
-	 */
 	Unbind<R extends RawActionEntry, A extends ActionEntry<R>>(action: A | R | Array<A | R>) {
 		const { rawActions } = this;
 
