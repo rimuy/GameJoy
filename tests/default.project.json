@@ -18,7 +18,7 @@
 		"ServerScriptService": {
 			"$className": "ServerScriptService",
 			"testBootstrap": {
-				"$path": "out/testBootstrap"
+				"$path": "out/testBootstrap.server.lua"
 			},
 			"Tests": {
 				"$path": "out/Tests"
