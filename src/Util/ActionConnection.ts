@@ -8,21 +8,20 @@ import * as t from "./TypeChecks";
 
 function checkInputs(
 	action: ActionEntry,
-	{ KeyCode, UserInputType }: InputObject,
+	keycode: Enum.KeyCode,
+	inputType: Enum.UserInputType,
 	processed: boolean,
 	callback: (processed: boolean) => void,
 ) {
 	const context = action.Context;
 
 	if (context) {
-		const {
-			Options: { Process },
-		} = context;
+		const { Process } = context.Options;
 
 		const RawAction = action.RawAction as RawActionEntry;
 
 		if (
-			t.isActionEqualTo(RawAction, KeyCode, UserInputType) &&
+			t.isActionEqualTo(RawAction, keycode, inputType) &&
 			(Process === undefined || Process === processed)
 		) {
 			callback(processed);
@@ -36,12 +35,12 @@ export class ActionConnection {
 	private constructor(private action: ActionEntry) {
 		this.bin = new Bin();
 
-		const conn = action.Destroyed.Connect(() => {
-			conn.Disconnect();
-
-			this.bin.destroy();
-			this.action.SetContext(undefined);
-		});
+		this.bin.add(
+			action.Destroyed.Connect(() => {
+				this.bin.destroy();
+				this.action.SetContext(undefined);
+			}),
+		);
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,18 +52,28 @@ export class ActionConnection {
 		return new ActionConnection(action);
 	}
 
-	Began(callback: (processed?: boolean) => void) {
+	SendInputRequest(
+		keyCode: Enum.KeyCode,
+		inputType: Enum.UserInputType,
+		processed: boolean,
+		callback: (processed: boolean) => void,
+	) {
+		checkInputs(this.action, keyCode, inputType, processed, callback);
+	}
+
+	Began(callback: (processed: boolean) => void) {
+		this.Connect(this.action.Began, callback);
 		this.bin.add(
-			IS.InputBegan.Connect((input, processed) =>
-				checkInputs(this.action, input, processed, callback),
+			IS.InputBegan.Connect(({ KeyCode, UserInputType }, processed) =>
+				this.SendInputRequest(KeyCode, UserInputType, processed, callback),
 			),
 		);
 	}
 
-	Ended(callback: (processed?: boolean) => void) {
+	Ended(callback: (processed: boolean) => void) {
 		this.bin.add(
-			IS.InputEnded.Connect((input, processed) =>
-				checkInputs(this.action, input, processed, callback),
+			IS.InputEnded.Connect(({ KeyCode, UserInputType }, processed) =>
+				this.SendInputRequest(KeyCode, UserInputType, processed, callback),
 			),
 		);
 	}

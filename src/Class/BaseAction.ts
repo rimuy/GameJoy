@@ -14,6 +14,10 @@ export abstract class BaseAction {
 
 	readonly Released = new Signal<(processed?: boolean) => void>();
 
+	readonly Began = new Signal<(processed: boolean) => void>();
+
+	readonly Ended = new Signal<(processed: boolean) => void>();
+
 	readonly Cancelled = new Signal();
 
 	readonly Connected = new Signal();
