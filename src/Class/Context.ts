@@ -30,7 +30,11 @@ export class Context<O extends ContextOptions> {
 
 	constructor(public readonly Options: O) {
 		if (!RunService.IsClient()) {
-			error(debug.traceback(`${getmetatable(this)} can only be instantied on the client.`));
+			error(
+				debug.traceback(
+					`${getmetatable(this)} can only be instantied on the client.`,
+				),
+			);
 		}
 
 		this.bin = new Bin();
@@ -52,7 +56,8 @@ export class Context<O extends ContextOptions> {
 				.expect("An error occurred while trying to unwrap action.");
 
 			if (OnBefore!() === true) {
-				RunSynchronously === true ? listener() : this.queue.Add(action, listener);
+				if (RunSynchronously === true) listener();
+				else this.queue.Add(action, listener);
 			}
 		});
 	}
@@ -78,7 +83,10 @@ export class Context<O extends ContextOptions> {
 	/**
 	 * @client
 	 */
-	Bind<R extends RawActionEntry, A extends ActionEntry<R>>(action: A | R | Array<A | R>, listener: () => void) {
+	Bind<R extends RawActionEntry, A extends ActionEntry<R>>(
+		action: A | R | Array<A | R>,
+		listener: () => void | Promise<void>,
+	) {
 		const { actions } = this;
 
 		if (t.isAction(action)) {
@@ -117,7 +125,9 @@ export class Context<O extends ContextOptions> {
 			} else {
 				this.TryRemoveAction(removed).or(
 					this.TryRemoveAction(
-						this.actions.keys().find(({ RawAction }) => RawAction === action),
+						this.actions
+							.keys()
+							.find(({ RawAction }) => RawAction === action),
 					),
 				);
 			}

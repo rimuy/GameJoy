@@ -1,6 +1,7 @@
 import Signal from "@rbxts/signal";
 import { UserInputService as IS } from "@rbxts/services";
 import { Bin } from "@rbxts/bin";
+
 import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 
 import * as t from "./TypeChecks";

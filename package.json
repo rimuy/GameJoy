@@ -8,6 +8,7 @@
 		"build": "rbxtsc --verbose",
 		"watch": "rbxtsc -w",
 		"eslint": "eslint src tests --max-warnings 0",
+		"eslint:fix": "eslint --fix src tests",
 		"test": "npm run test:types && npm run build && npm run test:compile && npm run test:rojo && npm run test:run",
 		"test:types": "cd tests && npm i -D @rbxts/types@latest @rbxts/compiler-types@latest",
 		"test:compile": "cd tests && rbxtsc --verbose",
