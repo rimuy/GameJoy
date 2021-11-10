@@ -40,7 +40,7 @@ export class OrderedAction<A extends RawActionEntry> extends BaseAction {
 				}
 			}
 
-			this.IsPressed && this.SetTriggered((canCancel = false));
+			if (this.IsPressed) this.SetTriggered((canCancel = false));
 		});
 
 		const conn = this.Connected.Connect(() => {
@@ -55,7 +55,7 @@ export class OrderedAction<A extends RawActionEntry> extends BaseAction {
 				let began = false;
 
 				connection.Triggered(() => {
-					!t.ActionEntryIs(entry, "OptionalAction") && queue.push(entry);
+					if (!t.ActionEntryIs(entry, "OptionalAction")) queue.push(entry);
 					began = true;
 
 					this.Changed.Fire();
@@ -63,13 +63,15 @@ export class OrderedAction<A extends RawActionEntry> extends BaseAction {
 
 				connection.Released(() => {
 					const index = queue.asPtr().findIndex((e) => e === entry);
-					began && index >= 0 && queue.remove(index);
+					if (began && index >= 0) queue.remove(index);
+
 					began = false;
 
 					if (canCancel) {
 						canCancel = false;
 						this.Cancelled.Fire();
 					}
+
 					this.Changed.Fire();
 				});
 			}

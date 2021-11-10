@@ -13,13 +13,14 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: A, options: ActionOptions = {}) {
 		super();
 
-		options.Repeat = math.max(1, options.Repeat ?? 1);
-		options.Timing = math.max(0, options.Timing ?? 0);
-
-		const { Repeat, Timing } = options as Required<ActionOptions>;
+		const {
+			Repeat = math.max(1, options.Repeat ?? 1),
+			Timing = math.max(0, options.Timing ?? 0),
+		} = options;
 
 		const conn = this.Connected.Connect(() => {
 			conn.Disconnect();
+
 			const connection = ActionConnection.From(this);
 			const newInputSignal = new Signal();
 
@@ -58,8 +59,9 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 			});
 
 			connection.Ended(() => {
-				this.IsPressed && !cancelled && this.SetTriggered(false);
-				Repeat === 1 && this.Released.Fire(false);
+				if (this.IsPressed && !cancelled) this.SetTriggered(false);
+				if (Repeat === 1) this.Released.Fire(false);
+
 				this.Changed.Fire();
 			});
 

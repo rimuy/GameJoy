@@ -25,11 +25,15 @@
 				"semi": true,
 				"trailingComma": "all",
 				"singleQuote": false,
-				"printWidth": 120,
+				"printWidth": 105,
 				"tabWidth": 8,
 				"useTabs": true
 			}
 		],
-		"roblox-ts/no-namespace-merging": "off"
+		"@typescript-eslint/no-misused-promises": "error",
+		"@typescript-eslint/no-unused-expressions": "warn",
+		"roblox-ts/no-namespace-merging": "off",
+		"prefer-const": "warn",
+		"curly": ["warn", "multi-line", "consistent"]
 	}
 }

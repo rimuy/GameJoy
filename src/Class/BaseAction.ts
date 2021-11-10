@@ -27,7 +27,11 @@ export abstract class BaseAction {
 	protected SetTriggered(value: boolean, ignoreEventCall?: boolean) {
 		(this.IsPressed as boolean) = value;
 
-		!ignoreEventCall && this[value === true ? "Triggered" : "Released"].Fire(this.Context?.Options.Process);
+		if (!ignoreEventCall) {
+			this[value === true ? "Triggered" : "Released"].Fire(
+				this.Context?.Options.Process,
+			);
+		}
 	}
 
 	SetContext<O extends ContextOptions>(context: Context<O> | undefined) {

@@ -12,15 +12,28 @@ interface ActionTypes<A extends RawActionEntry> {
 	OrderedAction: Ordered<A>;
 }
 
-export const isActionEqualTo = (entry: RawActionEntry | ActionEntry, key: Enum.KeyCode, input: Enum.UserInputType) =>
+export const isActionEqualTo = (
+	entry: RawActionEntry | ActionEntry,
+	key: Enum.KeyCode,
+	input: Enum.UserInputType,
+) =>
 	(typeIs(entry, "EnumItem") && key === entry) ||
 	(typeIs(entry, "string") && key.Name === entry) ||
 	(typeIs(entry, "EnumItem") && input === entry) ||
 	(typeIs(entry, "string") && input.Name === entry);
 
 export const isAction = <A extends RawActionEntry>(value: unknown): value is ActionEntry<A> =>
-	["Action", "CompositeAction", "DynamicAction", "MixedAction", "OptionalAction", "OrderedAction"].some(
-		(actionType) => type(value) === "table" && tostring(getmetatable(value as object)) === actionType,
+	[
+		"Action",
+		"CompositeAction",
+		"DynamicAction",
+		"MixedAction",
+		"OptionalAction",
+		"OrderedAction",
+	].some(
+		(actionType) =>
+			type(value) === "table" &&
+			tostring(getmetatable(value as object)) === actionType,
 	);
 
 export const isActionArray = t.array(isAction);
@@ -48,4 +61,5 @@ export const isValidActionEntry = t.union(isActionLike, isActionLikeArray);
 export const ActionEntryIs = <A extends RawActionEntry, E extends keyof ActionTypes<A>>(
 	value: unknown,
 	actionType: E,
-): value is ActionTypes<A>[E] => type(value) === "table" && tostring(getmetatable(value as object)) === actionType;
+): value is ActionTypes<A>[E] =>
+	type(value) === "table" && tostring(getmetatable(value as object)) === actionType;

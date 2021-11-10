@@ -50,7 +50,11 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 		if (!t.isValidActionEntry(newAction)) {
 			error(debug.traceback("Invalid action entry."));
 		} else if (!this.Context) {
-			error(debug.traceback("You can't update an action that doesn't belong to a context."));
+			error(
+				debug.traceback(
+					"You can't update an action that doesn't belong to a context.",
+				),
+			);
 		}
 
 		this.CurrentConnection?.Destroy();

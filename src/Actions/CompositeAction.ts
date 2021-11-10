@@ -31,7 +31,7 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 				return this.SetTriggered(true);
 			}
 
-			this.IsPressed && this.SetTriggered(false);
+			if (this.IsPressed) this.SetTriggered(false);
 		});
 
 		const conn = this.Connected.Connect(() => {
@@ -48,7 +48,7 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 				});
 
 				connection.Released(() => {
-					!isOptional(action) && status.insert(action, false);
+					if (!isOptional(action)) status.insert(action, false);
 
 					this.Changed.Fire();
 				});
