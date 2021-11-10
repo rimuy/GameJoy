@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/gamejoy",
-	"version": "1.0.0-alpha.1",
+	"version": "1.0.0-alpha.2",
 	"description": "",
 	"main": "out/init.lua",
 	"types": "out/index.d.ts",
@@ -13,7 +13,8 @@
 		"test:link": "npm link && cd tests && npm link @rbxts/gamejoy",
 		"test:compile": "cd tests && rbxtsc --verbose",
 		"test:rojo": "rojo build tests -o ./tests/test.rbxlx",
-		"test:run": "run-in-roblox --place ./tests/test.rbxlx --script ./tests/out/testBootstrap.server.lua"
+		"test:run": "run-in-roblox --place ./tests/test.rbxlx --script ./tests/out/testBootstrap.server.lua",
+		"prepublishOnly": "npm build"
 	},
 	"keywords": [
 		"Roblox",
