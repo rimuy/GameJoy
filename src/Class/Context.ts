@@ -28,7 +28,7 @@ export class Context<O extends ContextOptions> {
 
 	private rawActions: HashMap<ActionKey, ActionEntry>;
 
-	constructor(public readonly Options: O) {
+	constructor(public readonly Options?: O) {
 		if (!RunService.IsClient()) {
 			error(
 				debug.traceback(

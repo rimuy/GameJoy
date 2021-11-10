@@ -16,7 +16,7 @@ function checkInputs(
 	const context = action.Context;
 
 	if (context) {
-		const { Process } = context.Options;
+		const { Process } = context.Options ?? {};
 
 		const RawAction = action.RawAction as RawActionEntry;
 

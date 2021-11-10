@@ -33,7 +33,7 @@ export abstract class BaseAction {
 
 		if (!ignoreEventCall) {
 			this[value === true ? "Triggered" : "Released"].Fire(
-				this.Context?.Options.Process,
+				this.Context?.Options?.Process,
 			);
 		}
 	}
