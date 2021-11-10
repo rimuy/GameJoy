@@ -6,26 +6,26 @@ on:
 
 jobs:
     lint:
-        name: ESLint
+        name: Linter
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v2.3.4
+              uses: actions/checkout@v2.4.0
 
             - name: Install NPM dependencies
-              uses: bahmutov/npm-install@v1.7.4
+              uses: bahmutov/npm-install@v1.7.10
 
             - name: Run ESLint
               run: npm run eslint
     build:
-        name: Compile
+        name: Compilation
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v2.3.4
+              uses: actions/checkout@v2.4.0
 
             - name: Install NPM dependencies
-              uses: bahmutov/npm-install@v1.7.4
+              uses: bahmutov/npm-install@v1.7.10
 
             - name: Compile
               run: npm run build
@@ -35,7 +35,7 @@ jobs:
         timeout-minutes: 10
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v2.3.4
+              uses: actions/checkout@v2.4.0
 
             - name: Install Roblox Studio
               uses: OrbitalOwen/roblox-win-installer-action@1.1
@@ -49,7 +49,7 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install NPM dependencies
-              uses: bahmutov/npm-install@v1.7.4
+              uses: bahmutov/npm-install@v1.7.10
 
             - name: Compile and run tests
               run: npm test
