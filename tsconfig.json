@@ -16,7 +16,6 @@
 		"typeRoots": ["node_modules/@rbxts"],
 		"rootDir": "src",
 		"outDir": "out",
-		"baseUrl": "src",
 		"incremental": false,
 		"declaration": true
 	}
