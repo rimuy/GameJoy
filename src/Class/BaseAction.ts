@@ -32,6 +32,6 @@ export abstract class BaseAction {
 
 	SetContext<O extends ContextOptions>(context: Context<O> | undefined) {
 		(this.Context as unknown) = context;
-		task.defer(() => this.Connected.Fire());
+		this.Connected.Fire();
 	}
 }
