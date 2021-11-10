@@ -9,8 +9,8 @@
 		"watch": "rbxtsc -w",
 		"eslint": "eslint src tests --max-warnings 0",
 		"test": "npm run build && npm run test:compile && npm run test:rojo && npm run test:run",
-		"test:compile": "cd ./tests && rbxtsc --verbose",
-		"test:rojo": "rojo build ./tests -o ./tests/test.rbxlx",
+		"test:compile": "cd tests && rbxtsc --verbose",
+		"test:rojo": "rojo build tests -o ./tests/test.rbxlx",
 		"test:run": "run-in-roblox --place ./tests/test.rbxlx --script ./tests/out/testBootstrap.server.lua",
 		"prepublishOnly": "npm test"
 	},
