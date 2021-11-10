@@ -1,12 +1,11 @@
 {
 	"name": "@rbxts/gamejoy",
-	"version": "1.0.0",
-	"description": "Input library",
+	"version": "1.0.0-alpha.0",
+	"description": "",
 	"main": "out/init.lua",
 	"types": "out/index.d.ts",
 	"scripts": {
 		"build": "rbxtsc --verbose",
-		"watch": "rbxtsc -w",
 		"eslint": "eslint src tests --max-warnings 0",
 		"eslint:fix": "eslint --fix src tests",
 		"test": "npm run test:types && npm run build && npm run test:compile && npm run test:rojo && npm run test:run",
