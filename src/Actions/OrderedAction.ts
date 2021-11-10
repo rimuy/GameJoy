@@ -46,7 +46,7 @@ export class OrderedAction<A extends RawActionEntry> extends BaseAction {
 		const conn = this.Connected.Connect(() => {
 			conn.Disconnect();
 
-			for (const [, entry] of ipairs(RawAction)) {
+			for (const entry of RawAction) {
 				const action = TransformAction<A>(entry, Action, Mixed);
 				const connection = ActionConnection.From(action);
 

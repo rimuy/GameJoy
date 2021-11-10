@@ -29,7 +29,6 @@
 				"useTabs": true
 			}
 		],
-		"roblox-ts/no-array-pairs": "off",
 		"roblox-ts/no-namespace-merging": "off"
 	}
 }

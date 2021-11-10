@@ -21,7 +21,7 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 
 		const status = (this.status = HashMap.empty());
 
-		for (const [, entry] of ipairs(RawAction)) {
+		for (const entry of RawAction) {
 			const action = TransformAction<A>(entry, Action, Mixed);
 			status.insert(action, isOptional(action));
 		}
