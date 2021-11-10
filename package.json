@@ -8,12 +8,12 @@
 		"build": "rbxtsc --verbose",
 		"eslint": "eslint src tests --max-warnings 0",
 		"eslint:fix": "eslint --fix src tests",
-		"test": "npm run test:types && npm run build && npm run test:compile && npm run test:rojo && npm run test:run",
+		"test": "npm run test:types && npm run build && npm run test:link && npm run test:compile && npm run test:rojo && npm run test:run",
 		"test:types": "cd tests && npm i -D @rbxts/types@latest @rbxts/compiler-types@latest",
+		"test:link": "npm link && cd tests && npm link @rbxts/gamejoy",
 		"test:compile": "cd tests && rbxtsc --verbose",
 		"test:rojo": "rojo build tests -o ./tests/test.rbxlx",
-		"test:run": "run-in-roblox --place ./tests/test.rbxlx --script ./tests/out/testBootstrap.server.lua",
-		"prepublishOnly": "npm test"
+		"test:run": "run-in-roblox --place ./tests/test.rbxlx --script ./tests/out/testBootstrap.server.lua"
 	},
 	"keywords": [
 		"Roblox",
