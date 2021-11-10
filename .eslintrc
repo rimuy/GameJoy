@@ -3,12 +3,13 @@
 	"parserOptions": {
 		"jsx": true,
 		"useJSXTextNode": true,
-		"ecmaVersion": 2018,
+		"ecmaVersion": 2021,
 		"sourceType": "module",
 		"project": ["./tsconfig.json", "./tests/tsconfig.json"]
 	},
 	"plugins": [
 		"@typescript-eslint",
+		"@typescript-eslint/eslint-plugin",
 		"roblox-ts",
 		"prettier"
 	],
