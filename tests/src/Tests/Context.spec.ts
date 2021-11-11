@@ -1,6 +1,7 @@
 /// <reference types="@rbxts/testez/globals" />
 
-import { Context, Actions } from "@rbxts/gamejoy";
+import { Context, Actions, ContextOptions } from "@rbxts/gamejoy";
+import { ActionConnection } from "@rbxts/gamejoy/out/Util/ActionConnection";
 
 export = () => {
 	const { Action } = Actions;
@@ -18,15 +19,15 @@ export = () => {
 		it("Context.Bind", () => {
 			ctx.Bind(action, noop).Bind(action2, noop);
 
-			expect(ctx.Has(action)).to.be.ok();
-			expect(ctx.Has(action2)).to.be.ok();
+			expect(ctx.Has(action)).to.equal(true);
+			expect(ctx.Has(action2)).to.equal(true);
 		});
 
 		it("Context.Unbind", () => {
 			ctx.Unbind(action).Unbind(action2);
 
-			expect(!ctx.Has(action)).to.be.ok();
-			expect(!ctx.Has(action2)).to.be.ok();
+			expect(ctx.Has(action)).to.equal(false);
+			expect(ctx.Has(action2)).to.equal(false);
 		});
 
 		it("Context.UnbindAll", () => {
@@ -34,8 +35,8 @@ export = () => {
 
 			ctx.UnbindAll();
 
-			expect(!ctx.Has(action)).to.be.ok();
-			expect(!ctx.Has(action2)).to.be.ok();
+			expect(ctx.Has(action)).to.equal(false);
+			expect(ctx.Has(action2)).to.equal(false);
 		});
 	});
 
@@ -58,7 +59,7 @@ export = () => {
 
 			task.wait(0.3);
 
-			expect(!obj.value).to.be.ok();
+			expect(obj.value).to.equal(false);
 		});
 
 		it("RunSynchronously", () => {
@@ -77,7 +78,43 @@ export = () => {
 
 			task.wait(0.3);
 
-			expect(obj.a && obj.b).to.be.ok();
+			expect(obj.a && obj.b).to.equal(true);
+		});
+
+		it("Process", () => {
+			const ctxArr = [
+				[undefined, new Context()],
+				[
+					false,
+					new Context({
+						Process: false,
+					}),
+				],
+				[
+					true,
+					new Context({
+						Process: true,
+					}),
+				],
+			] as const;
+			const results = new Array<boolean>(3);
+
+			for (const [p, ctx] of ctxArr) {
+				ctx.Bind(action, noop);
+
+				ActionConnection.From(action).SendInputRequest(
+					Enum.KeyCode.Q,
+					Enum.UserInputType.Keyboard,
+					p!,
+					(processed) => results.push(processed),
+				);
+			}
+
+			expect(
+				() =>
+					results.size() === 3 &&
+					results.every((r, i) => r === ctxArr[i][0]),
+			).to.equal(true);
 		});
 	});
 };
