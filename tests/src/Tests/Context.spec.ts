@@ -1,6 +1,7 @@
 /// <reference types="@rbxts/testez/globals" />
 
 import { Context, Actions } from "@rbxts/gamejoy";
+import { ActionConnection } from "@rbxts/gamejoy/out/Util/ActionConnection";
 
 export = () => {
 	const { Action } = Actions;
@@ -85,7 +86,7 @@ export = () => {
 
 		it("Process", () => {
 			const pAction = new Action("P");
-
+			const results = new Array<boolean>(2);
 			const ctxArr = [
 				new Context({
 					Process: false,
@@ -94,7 +95,6 @@ export = () => {
 					Process: true,
 				}),
 			] as const;
-			const results = new Array<boolean>(2);
 
 			for (const ctx of ctxArr) {
 				const p = ctx.Options!.Process!;
@@ -103,7 +103,12 @@ export = () => {
 					results.push(p);
 				});
 
-				pAction.Triggered.Fire(p);
+				ActionConnection.From(pAction).SendInputRequest(
+					Enum.KeyCode.P,
+					Enum.UserInputType.Keyboard,
+					p,
+					() => pAction.Triggered.Fire(),
+				);
 			}
 
 			expect(
