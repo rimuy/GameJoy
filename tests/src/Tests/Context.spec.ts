@@ -76,6 +76,20 @@ export = () => {
 				obj.b = true;
 			});
 
+			ActionConnection.From(action).SendInputRequest(
+				Enum.KeyCode.Q,
+				Enum.UserInputType.Keyboard,
+				false,
+				noop,
+			);
+
+			ActionConnection.From(action2).SendInputRequest(
+				Enum.KeyCode.E,
+				Enum.UserInputType.Keyboard,
+				false,
+				noop,
+			);
+
 			task.wait(0.3);
 
 			expect(obj.a && obj.b).to.equal(true);
@@ -111,9 +125,9 @@ export = () => {
 			}
 
 			expect(
-				() =>
+				(() =>
 					results.size() === 3 &&
-					results.every((r, i) => r === ctxArr[i][0]),
+					results.every((r, i) => r === ctxArr[i][0]))(),
 			).to.equal(true);
 		});
 	});
