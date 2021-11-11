@@ -86,7 +86,6 @@ export = () => {
 
 		it("Process", () => {
 			const ctxArr = [
-				[new Context(), undefined],
 				[
 					new Context({
 						Process: false,
@@ -100,7 +99,7 @@ export = () => {
 					true,
 				],
 			] as const;
-			const results = new Array<boolean>(3);
+			const results = new Array<boolean>(2);
 
 			for (const [ctx, p] of ctxArr) {
 				ctx.Bind(action, noop);
@@ -113,7 +112,7 @@ export = () => {
 
 			expect(
 				(() =>
-					results.size() === 3 &&
+					results.size() === 2 &&
 					results.every((r, i) => r === ctxArr[i][1]))(),
 			).to.equal(true);
 		});
