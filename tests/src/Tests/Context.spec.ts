@@ -1,6 +1,6 @@
 /// <reference types="@rbxts/testez/globals" />
 
-import { Context, Actions, ContextOptions } from "@rbxts/gamejoy";
+import { Context, Actions } from "@rbxts/gamejoy";
 import { ActionConnection } from "@rbxts/gamejoy/out/Util/ActionConnection";
 
 export = () => {
@@ -76,19 +76,8 @@ export = () => {
 				obj.b = true;
 			});
 
-			ActionConnection.From(action).SendInputRequest(
-				Enum.KeyCode.Q,
-				Enum.UserInputType.Keyboard,
-				false,
-				noop,
-			);
-
-			ActionConnection.From(action2).SendInputRequest(
-				Enum.KeyCode.E,
-				Enum.UserInputType.Keyboard,
-				false,
-				noop,
-			);
+			action.Triggered.Fire();
+			action2.Triggered.Fire();
 
 			task.wait(0.3);
 
@@ -97,37 +86,35 @@ export = () => {
 
 		it("Process", () => {
 			const ctxArr = [
-				[undefined, new Context()],
+				[new Context(), undefined],
 				[
-					false,
 					new Context({
 						Process: false,
 					}),
+					false,
 				],
 				[
-					true,
 					new Context({
 						Process: true,
 					}),
+					true,
 				],
 			] as const;
 			const results = new Array<boolean>(3);
 
-			for (const [p, ctx] of ctxArr) {
+			for (const [ctx, p] of ctxArr) {
 				ctx.Bind(action, noop);
-
-				ActionConnection.From(action).SendInputRequest(
-					Enum.KeyCode.Q,
-					Enum.UserInputType.Keyboard,
-					p!,
-					(processed) => results.push(processed),
+				ActionConnection.From(action).Triggered((processed) =>
+					results.push(processed!),
 				);
+
+				action.Triggered.Fire(p);
 			}
 
 			expect(
 				(() =>
 					results.size() === 3 &&
-					results.every((r, i) => r === ctxArr[i][0]))(),
+					results.every((r, i) => r === ctxArr[i][1]))(),
 			).to.equal(true);
 		});
 	});
