@@ -111,8 +111,6 @@ export = () => {
 				);
 			}
 
-			print(results.size(), results[0], results[1]);
-
 			expect(
 				results.size() === 2 && results[0] === false && results[1] === true,
 			).to.equal(true);
