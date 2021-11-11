@@ -85,31 +85,27 @@ export = () => {
 
 		it("Process", () => {
 			const ctxArr = [
-				[
-					new Context({
-						Process: false,
-					}),
-					false,
-				],
-				[
-					new Context({
-						Process: true,
-					}),
-					true,
-				],
+				new Context({
+					Process: false,
+				}),
+				new Context({
+					Process: true,
+				}),
 			] as const;
 			const results = new Array<boolean>(2);
 
-			for (const [ctx, p] of ctxArr) {
+			for (const ctx of ctxArr) {
+				const p = ctx.Options!.Process!;
+
 				ctx.Bind(action, () => {
-					results.push(p!);
+					results.push(p);
 				});
 
 				action.Triggered.Fire(p);
 			}
 
 			expect(
-				results.size() === 2 && results.every((r, i) => r === ctxArr[i][1]),
+				results.size() === 2 && results[0] === false && results[1] === true,
 			).to.equal(true);
 		});
 	});
