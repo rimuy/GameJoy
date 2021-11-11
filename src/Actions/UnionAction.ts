@@ -5,7 +5,7 @@ import { Action } from "./Action";
 
 import { TransformAction } from "../Util/TransformAction";
 
-export class MixedAction<A extends RawActionEntry> extends BaseAction {
+export class UnionAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: Array<A | ActionEntry<A> | Array<A | ActionEntry<A>>>) {
 		super();
 
@@ -13,7 +13,7 @@ export class MixedAction<A extends RawActionEntry> extends BaseAction {
 			conn.Disconnect();
 
 			for (const entry of RawAction) {
-				const action = TransformAction<A>(entry, Action, MixedAction);
+				const action = TransformAction<A>(entry, Action, UnionAction);
 				const connection = ActionConnection.From(action);
 
 				action.SetContext(this.Context);

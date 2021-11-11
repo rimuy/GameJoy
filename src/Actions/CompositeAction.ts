@@ -4,7 +4,7 @@ import { ActionConnection } from "../Util/ActionConnection";
 import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
-import { MixedAction as Mixed } from "./MixedAction";
+import { UnionAction as Union } from "./UnionAction";
 
 import { TransformAction } from "../Util/TransformAction";
 import * as t from "../Util/TypeChecks";
@@ -22,7 +22,7 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 		const status = (this.status = HashMap.empty());
 
 		for (const entry of RawAction) {
-			const action = TransformAction<A>(entry, Action, Mixed);
+			const action = TransformAction<A>(entry, Action, Union);
 			status.insert(action, isOptional(action));
 		}
 

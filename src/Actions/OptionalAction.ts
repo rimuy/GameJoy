@@ -2,7 +2,7 @@ import { ActionConnection } from "../Util/ActionConnection";
 import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
-import { MixedAction as Mixed } from "./MixedAction";
+import { UnionAction as Union } from "./UnionAction";
 
 import { TransformAction } from "../Util/TransformAction";
 
@@ -13,7 +13,7 @@ export class OptionalAction<A extends RawActionEntry> extends BaseAction {
 		const conn = this.Connected.Connect(() => {
 			conn.Disconnect();
 
-			const action = TransformAction<A>(RawAction, Action, Mixed);
+			const action = TransformAction<A>(RawAction, Action, Union);
 			const connection = ActionConnection.From(action);
 
 			action.SetContext(this.Context);

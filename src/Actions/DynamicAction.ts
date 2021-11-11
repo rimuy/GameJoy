@@ -4,7 +4,7 @@ import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 import { ActionConnection } from "../Util/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
-import { MixedAction as Mixed } from "./MixedAction";
+import { UnionAction as Union } from "./UnionAction";
 
 import { TransformAction } from "../Util/TransformAction";
 import * as t from "../Util/TypeChecks";
@@ -13,7 +13,7 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 	private CurrentConnection: ActionConnection | undefined;
 
 	private ConnectAction(newAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
-		const action = TransformAction<A>(newAction, Action, Mixed);
+		const action = TransformAction<A>(newAction, Action, Union);
 		const connection = ActionConnection.From(action);
 
 		(this.RawAction as unknown) = action.RawAction;

@@ -1,4 +1,4 @@
-import { Action, Composite, Dynamic, Optional, Ordered, Mixed } from "../Actions";
+import { Action, Composite, Dynamic, Optional, Ordered, Union } from "../Actions";
 
 export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Action<A>
@@ -6,7 +6,7 @@ export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Dynamic<A>
 	| Optional<A>
 	| Ordered<A>
-	| Mixed<A>;
+	| Union<A>;
 
 export type ActionKey = RawActionEntry | Array<RawActionEntry | ActionEntry>;
 

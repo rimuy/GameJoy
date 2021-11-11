@@ -1,4 +1,4 @@
-import type { Action, Mixed } from "../Actions";
+import type { Action, Union } from "../Actions";
 import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 
 import * as t from "./TypeChecks";
@@ -6,7 +6,7 @@ import * as t from "./TypeChecks";
 export function TransformAction<A extends RawActionEntry>(
 	entry: A | ActionEntry<A> | Array<A | ActionEntry<A>>,
 	ActionClass: typeof Action,
-	ArrayActionClass: typeof Mixed,
+	ArrayActionClass: typeof Union,
 ) {
 	if (!t.isValidActionEntry(entry)) {
 		error(debug.traceback("Invalid action entry."));
