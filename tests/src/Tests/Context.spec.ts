@@ -1,7 +1,6 @@
 /// <reference types="@rbxts/testez/globals" />
 
 import { Context, Actions } from "@rbxts/gamejoy";
-import { ActionConnection } from "@rbxts/gamejoy/out/Util/ActionConnection";
 
 export = () => {
 	const { Action } = Actions;
@@ -102,18 +101,15 @@ export = () => {
 			const results = new Array<boolean>(2);
 
 			for (const [ctx, p] of ctxArr) {
-				ctx.Bind(action, noop);
-				ActionConnection.From(action).Triggered((processed) =>
-					results.push(processed!),
-				);
+				ctx.Bind(action, () => {
+					results.push(p!);
+				});
 
 				action.Triggered.Fire(p);
 			}
 
 			expect(
-				(() =>
-					results.size() === 2 &&
-					results.every((r, i) => r === ctxArr[i][1]))(),
+				results.size() === 2 && results.every((r, i) => r === ctxArr[i][1]),
 			).to.equal(true);
 		});
 	});
