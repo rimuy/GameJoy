@@ -6,7 +6,7 @@ export = () => {
 	const { Action } = Actions;
 	const noop = () => {};
 
-	describe("Context", () => {
+	describe("Methods", () => {
 		const ctx = new Context();
 		const action = new Action("Q");
 		const action2 = new Action("E");
@@ -39,43 +39,45 @@ export = () => {
 		});
 	});
 
-	describe("Context with OnBefore", () => {
-		const action = new Action("Q");
-		const ctx = new Context({
-			OnBefore: () => false,
-		});
-
-		const obj = { value: false };
-
-		ctx.Bind(action, () => {
-			obj.value = true;
-		});
-
-		action.Triggered.Fire();
-
-		task.wait(0.3);
-
-		expect(!obj.value).to.be.ok();
-	});
-
-	describe("Synchronous behaviour Context", () => {
+	describe("Options", () => {
 		const action = new Action("Q");
 		const action2 = new Action("E");
-		const ctx = new Context({
-			RunSynchronously: true,
+
+		it("OnBefore", () => {
+			const ctx = new Context({
+				OnBefore: () => false,
+			});
+
+			const obj = { value: false };
+
+			ctx.Bind(action, () => {
+				obj.value = true;
+			});
+
+			action.Triggered.Fire();
+
+			task.wait(0.3);
+
+			expect(!obj.value).to.be.ok();
 		});
 
-		const obj = { a: false, b: false };
+		it("RunSynchronously", () => {
+			const ctx = new Context({
+				RunSynchronously: true,
+			});
 
-		ctx.Bind(action, () => {
-			obj.a = true;
-			task.wait(1);
-		}).Bind(action2, () => {
-			obj.b = true;
+			const obj = { a: false, b: false };
+
+			ctx.Bind(action, () => {
+				obj.a = true;
+				task.wait(1);
+			}).Bind(action2, () => {
+				obj.b = true;
+			});
+
+			task.wait(0.3);
+
+			expect(obj.a && obj.b).to.be.ok();
 		});
-
-		task.wait(0.3);
-
-		expect(obj.a && obj.b).to.be.ok();
 	});
 };
