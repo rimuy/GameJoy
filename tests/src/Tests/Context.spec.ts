@@ -84,6 +84,8 @@ export = () => {
 		});
 
 		it("Process", () => {
+			const pAction = new Action("P");
+
 			const ctxArr = [
 				new Context({
 					Process: false,
@@ -97,11 +99,11 @@ export = () => {
 			for (const ctx of ctxArr) {
 				const p = ctx.Options!.Process!;
 
-				ctx.Bind(action, () => {
+				ctx.Bind(pAction, () => {
 					results.push(p);
 				});
 
-				action.Triggered.Fire(p);
+				pAction.Triggered.Fire(p);
 			}
 
 			expect(
