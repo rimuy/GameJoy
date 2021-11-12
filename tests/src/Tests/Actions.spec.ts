@@ -138,7 +138,7 @@ export = () => {
 
 		function executeOrder(arr: Array<ActionEntry>, active: boolean) {
 			for (const action of arr) {
-				action[active ? "Began" : "Ended"].Fire(false);
+				action[active ? "Triggered" : "Released"].Fire(false);
 				task.wait();
 			}
 		}
