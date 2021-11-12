@@ -1,6 +1,6 @@
 /// <reference types="@rbxts/testez/globals" />
 
-import { Context, Actions } from "@rbxts/gamejoy";
+import { Context, Actions, ActionEntry } from "@rbxts/gamejoy";
 
 export = () => {
 	const ctx = new Context();
@@ -136,6 +136,13 @@ export = () => {
 	describe("OrderedAction", () => {
 		const { Action, Ordered, Optional } = Actions;
 
+		function executeOrder(arr: Array<ActionEntry>, active: boolean) {
+			for (const action of arr) {
+				action[active ? "Began" : "Ended"].Fire(false);
+				task.wait();
+			}
+		}
+
 		it("List of actions", () => {
 			const passed = new Array<true>(2);
 
@@ -147,13 +154,10 @@ export = () => {
 				passed.push(true);
 			});
 
-			e.Began.Fire(false);
-			q.Began.Fire(false);
-			e.Ended.Fire(false);
-			q.Ended.Fire(false);
+			executeOrder([e, q], true);
+			executeOrder([e, q], false);
 
-			q.Began.Fire(false);
-			e.Began.Fire(false);
+			executeOrder([q, e], true);
 
 			expect(passed.size()).to.equal(1);
 		});
@@ -169,17 +173,10 @@ export = () => {
 				passed.push(true);
 			});
 
-			r.Began.Fire(false);
-			e.Began.Fire(false);
-			q.Began.Fire(false);
+			executeOrder([r, e, q], true);
+			executeOrder([r, e, q], false);
 
-			r.Ended.Fire(false);
-			e.Ended.Fire(false);
-			q.Ended.Fire(false);
-
-			q.Began.Fire(false);
-			e.Began.Fire(false);
-			r.Began.Fire(false);
+			executeOrder([q, e, r], true);
 
 			expect(passed.size()).to.equal(2);
 		});
