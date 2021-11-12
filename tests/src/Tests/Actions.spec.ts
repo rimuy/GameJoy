@@ -51,7 +51,7 @@ export = () => {
 		});
 	});
 	describe("CompositeAction", () => {
-		const { Action, Composite } = Actions;
+		const { Action, Composite, Optional } = Actions;
 
 		it("Composite of Q, E and R", () => {
 			let passed = false;
@@ -90,6 +90,24 @@ export = () => {
 			r.Began.Fire(false);
 
 			expect(passed).to.equal(true);
+		});
+		it("Composite with an optional action", () => {
+			const passed = new Array<true>(3);
+
+			const q = new Action("Q");
+			const e = new Action("E");
+			const r = new Action("R");
+			const comp = new Composite([q, e, new Optional(r)]);
+
+			ctx.Bind(comp, () => {
+				passed.push(true);
+			});
+
+			q.Began.Fire(false);
+			e.Began.Fire(false);
+			r.Began.Fire(false);
+
+			expect(passed.size()).to.equal(2);
 		});
 	});
 	describe("DynamicAction", () => {
@@ -143,12 +161,15 @@ export = () => {
 			const q = new Action("Q");
 			const e = new Action("E");
 			const r = new Action("R");
-			const optionalR = new Optional(r);
-			const ordered = new Ordered([q, e, optionalR]);
+			const ordered = new Ordered([q, e, new Optional(r)]);
 
 			ctx.Bind(ordered, () => {
 				passed.push(true);
 			});
+
+			r.Began.Fire(false);
+			e.Began.Fire(false);
+			q.Began.Fire(false);
 
 			q.Began.Fire(false);
 			e.Began.Fire(false);
