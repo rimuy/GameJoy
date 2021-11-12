@@ -1,6 +1,7 @@
 /// <reference types="@rbxts/testez/globals" />
 
 import { Context, Actions } from "@rbxts/gamejoy";
+import { Action } from "@rbxts/gamejoy/out/Actions";
 
 export = () => {
 	const ctx = new Context();
@@ -89,6 +90,29 @@ export = () => {
 			r.Began.Fire(false);
 
 			expect(passed).to.equal(true);
+		});
+	});
+	describe("DynamicAction", () => {
+		const { Dynamic } = Actions;
+
+		it("Update", () => {
+			const passed = new Array<boolean>(2);
+
+			const q = new Action("Q");
+			const e = new Action("E");
+			const dyn = new Dynamic<"Q" | "E">(q);
+
+			ctx.Bind(dyn, () => {
+				passed.push(true);
+			});
+
+			q.Began.Fire(false);
+			dyn.Update(e);
+			e.Began.Fire(false);
+
+			expect(passed.size()).to.equal(2);
+			expect(q.Context).to.never.be.ok();
+			expect(e.Context).to.equal(ctx);
 		});
 	});
 };
