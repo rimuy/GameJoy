@@ -1,7 +1,6 @@
 /// <reference types="@rbxts/testez/globals" />
 
 import { Context, Actions } from "@rbxts/gamejoy";
-import { Action } from "@rbxts/gamejoy/out/Actions";
 
 export = () => {
 	const ctx = new Context();
@@ -22,8 +21,8 @@ export = () => {
 			expect(passed).to.equal(true);
 		});
 		it("Double tap", () => {
-			const passed = new Array<boolean>(1);
-			const cancelled = new Array<boolean>(1);
+			const passed = new Array<true>(2);
+			const cancelled = new Array<true>(2);
 
 			const action = new Action("D", {
 				Repeat: 2,
@@ -55,12 +54,13 @@ export = () => {
 		const { Action, Composite } = Actions;
 
 		it("Composite of Q, E and R", () => {
+			let passed = false;
+
 			const q = new Action("Q");
 			const e = new Action("E");
 			const r = new Action("R");
 
 			const comp = new Composite([q, e, r]);
-			let passed = false;
 
 			ctx.Bind(comp, () => {
 				passed = true;
@@ -93,10 +93,10 @@ export = () => {
 		});
 	});
 	describe("DynamicAction", () => {
-		const { Dynamic } = Actions;
+		const { Action, Dynamic } = Actions;
 
 		it("Update", () => {
-			const passed = new Array<boolean>(2);
+			const passed = new Array<true>(3);
 
 			const q = new Action("Q");
 			const e = new Action("E");
@@ -113,6 +113,48 @@ export = () => {
 			expect(passed.size()).to.equal(2);
 			expect(q.Context).to.never.be.ok();
 			expect(e.Context).to.equal(ctx);
+		});
+	});
+	describe("OrderedAction", () => {
+		const { Action, Ordered, Optional } = Actions;
+
+		it("List of actions", () => {
+			const passed = new Array<true>(2);
+
+			const q = new Action("Q");
+			const e = new Action("E");
+			const ordered = new Ordered([q, e]);
+
+			ctx.Bind(ordered, () => {
+				passed.push(true);
+			});
+
+			e.Began.Fire(false);
+			q.Began.Fire(false);
+
+			q.Began.Fire(false);
+			e.Began.Fire(false);
+
+			expect(passed).to.equal(true);
+		});
+		it("With an optional action", () => {
+			const passed = new Array<true>(3);
+
+			const q = new Action("Q");
+			const e = new Action("E");
+			const r = new Action("R");
+			const optionalR = new Optional(r);
+			const ordered = new Ordered([q, e, optionalR]);
+
+			ctx.Bind(ordered, () => {
+				passed.push(true);
+			});
+
+			q.Began.Fire(false);
+			e.Began.Fire(false);
+			r.Began.Fire(false);
+
+			expect(passed.size()).to.equal(2);
 		});
 	});
 };
