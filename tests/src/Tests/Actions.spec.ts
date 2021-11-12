@@ -135,7 +135,7 @@ export = () => {
 			q.Began.Fire(false);
 			e.Began.Fire(false);
 
-			expect(passed).to.equal(true);
+			expect(passed.size()).to.equal(1);
 		});
 		it("With an optional action", () => {
 			const passed = new Array<true>(3);
