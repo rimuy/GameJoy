@@ -72,7 +72,7 @@ export = () => {
 
 			expect(passed).to.equal(true);
 		});
-		it("Composite within another composite", () => {
+		it("Within another composite", () => {
 			let passed = false;
 
 			const q = new Action("Q");
@@ -91,7 +91,7 @@ export = () => {
 
 			expect(passed).to.equal(true);
 		});
-		it("Composite with an optional action", () => {
+		it("With an optional action", () => {
 			const passed = new Array<true>(3);
 
 			const q = new Action("Q");
@@ -149,6 +149,8 @@ export = () => {
 
 			e.Began.Fire(false);
 			q.Began.Fire(false);
+			e.Ended.Fire(false);
+			q.Ended.Fire(false);
 
 			q.Began.Fire(false);
 			e.Began.Fire(false);
@@ -170,6 +172,10 @@ export = () => {
 			r.Began.Fire(false);
 			e.Began.Fire(false);
 			q.Began.Fire(false);
+
+			r.Ended.Fire(false);
+			e.Ended.Fire(false);
+			q.Ended.Fire(false);
 
 			q.Began.Fire(false);
 			e.Began.Fire(false);
