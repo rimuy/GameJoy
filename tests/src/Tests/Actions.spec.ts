@@ -9,7 +9,7 @@ export = () => {
 		const { Action } = Actions;
 
 		it("Normal action", () => {
-			const action = new Action("Q");
+			const action = new Action("A");
 			let passed = false;
 
 			ctx.Bind(action, () => {
@@ -24,7 +24,7 @@ export = () => {
 			const passed = new Array<boolean>(1);
 			const cancelled = new Array<boolean>(1);
 
-			const action = new Action("Q", {
+			const action = new Action("D", {
 				Repeat: 2,
 				Timing: 0.3,
 			});
@@ -48,6 +48,47 @@ export = () => {
 
 			expect(passed.size()).to.equal(1);
 			expect(cancelled.size()).to.equal(1);
+		});
+	});
+	describe("CompositeAction", () => {
+		const { Action, Composite } = Actions;
+
+		it("Composite of Q, E and R", () => {
+			const q = new Action("Q");
+			const e = new Action("E");
+			const r = new Action("R");
+
+			const comp = new Composite([q, e, r]);
+			let passed = false;
+
+			ctx.Bind(comp, () => {
+				passed = true;
+			});
+
+			q.Began.Fire(false);
+			e.Began.Fire(false);
+			r.Began.Fire(false);
+
+			expect(passed).to.equal(true);
+		});
+		it("Composite within another composite", () => {
+			let passed = false;
+
+			const q = new Action("Q");
+			const e = new Action("E");
+			const r = new Action("R");
+
+			const comp = new Composite([q, new Composite([e, r])]);
+
+			ctx.Bind(comp, () => {
+				passed = true;
+			});
+
+			q.Began.Fire(false);
+			e.Began.Fire(false);
+			r.Began.Fire(false);
+
+			expect(passed).to.equal(true);
 		});
 	});
 };
