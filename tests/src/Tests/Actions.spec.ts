@@ -45,7 +45,7 @@ export = () => {
 
 			action.Began.Fire(false);
 
-			task.wait(0.32);
+			task.wait(0.4);
 
 			expect(passed.size()).to.equal(1);
 			expect(cancelled.size()).to.equal(1);
