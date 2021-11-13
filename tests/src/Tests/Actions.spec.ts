@@ -133,8 +133,8 @@ export = () => {
 			expect(e.Context).to.equal(ctx);
 		});
 	});
-	describe("OrderedAction", () => {
-		const { Action, Ordered, Optional } = Actions;
+	describe("SequenceAction", () => {
+		const { Action, Optional, Sequence } = Actions;
 
 		function executeOrder(arr: Array<ActionEntry>, active: boolean) {
 			for (const action of arr) {
@@ -148,9 +148,9 @@ export = () => {
 
 			const q = new Action("Q");
 			const e = new Action("E");
-			const ordered = new Ordered([q, e]);
+			const sequence = new Sequence([q, e]);
 
-			ctx.Bind(ordered, () => {
+			ctx.Bind(sequence, () => {
 				passed.push(true);
 			});
 
@@ -167,9 +167,9 @@ export = () => {
 			const q = new Action("Q");
 			const e = new Action("E");
 			const r = new Action("R");
-			const ordered = new Ordered([q, e, new Optional(r)]);
+			const sequence = new Sequence([q, e, new Optional(r)]);
 
-			ctx.Bind(ordered, () => {
+			ctx.Bind(sequence, () => {
 				passed.push(true);
 			});
 

@@ -9,7 +9,7 @@ import { UnionAction as Union } from "./UnionAction";
 import { TransformAction } from "../Util/TransformAction";
 import * as t from "../Util/TypeChecks";
 
-export class OrderedAction<A extends RawActionEntry> extends BaseAction {
+export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 	private queue: Vec<A | ActionEntry<A> | Array<A | ActionEntry<A>>>;
 
 	constructor(public readonly RawAction: Array<A | ActionEntry<A> | Array<A | ActionEntry<A>>>) {

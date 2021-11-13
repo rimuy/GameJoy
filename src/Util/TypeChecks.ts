@@ -1,6 +1,6 @@
 import { t } from "@rbxts/t";
 
-import { Action, Composite, Dynamic, Optional, Ordered, Union } from "../Actions";
+import { Action, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
 import { ActionEntry, RawActionEntry, RawActionLike } from "../Definitions/Types";
 
 interface ActionTypes<A extends RawActionEntry> {
@@ -8,7 +8,7 @@ interface ActionTypes<A extends RawActionEntry> {
 	CompositeAction: Composite<A>;
 	DynamicAction: Dynamic<A>;
 	OptionalAction: Optional<A>;
-	OrderedAction: Ordered<A>;
+	SequenceAction: Sequence<A>;
 	UnionAction: Union<A>;
 }
 
@@ -30,7 +30,7 @@ export const isAction = <A extends RawActionEntry>(value: unknown): value is Act
 		"CompositeAction",
 		"DynamicAction",
 		"OptionalAction",
-		"OrderedAction",
+		"SequenceAction",
 		"UnionAction",
 	].some(
 		(actionType) =>
