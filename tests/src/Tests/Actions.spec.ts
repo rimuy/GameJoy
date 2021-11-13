@@ -181,4 +181,23 @@ export = () => {
 			expect(passed.size()).to.equal(2);
 		});
 	});
+	describe("UnionAction", () => {
+		const { Action } = Actions;
+
+		it("List of actions", () => {
+			const passed = new Array<true>(2);
+
+			const q = new Action("Q");
+			const e = new Action("E");
+
+			ctx.Bind([q, e], () => {
+				passed.push(true);
+			});
+
+			q.Began.Fire(false);
+			e.Began.Fire(false);
+
+			expect(passed.size()).to.equal(2);
+		});
+	});
 };
