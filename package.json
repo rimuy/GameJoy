@@ -14,7 +14,9 @@
 		"test:compile": "cd tests && rbxtsc --verbose",
 		"test:rojo": "rojo build tests -o ./tests/test.rbxlx",
 		"test:run": "run-in-roblox --place ./tests/test.rbxlx --script ./tests/out/testBootstrap.server.lua",
-		"prepublishOnly": "npm run build"
+		"test:update-package": "cd tests && npm i @rbxts/gamejoy@latest",
+		"prepublishOnly": "npm run build",
+		"postpublish": "npm run test:update-package"
 	},
 	"keywords": [
 		"Roblox",
