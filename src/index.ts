@@ -1,29 +1,18 @@
-import { BaseAction as GBaseAction } from "./Class/BaseAction";
-import { Context as GContext } from "./Class/Context";
+export { BaseAction } from "./Class/BaseAction";
+export { Context } from "./Class/Context";
 
-import * as GActions from "./Actions";
-import * as Checks from "./Util/TypeChecks";
+export * as Actions from "./Actions";
 
-import { ActionEntry, ContextOptions, RawActionEntry, RawActionLike } from "./Definitions/Types";
+export * as TypeChecks from "./Util/TypeChecks";
+export { withKeypadSupport } from "./Util/withKeypadSupport";
+export { withModifierKeys } from "./Util/withModifierKeys";
 
-// Utility Types
-declare namespace GameJoy {
-	export { ActionEntry, ContextOptions, RawActionEntry, RawActionLike };
-}
+export {
+	ActionEntry,
+	AxisActionEntry,
+	ContextOptions,
+	RawActionEntry,
+	RawActionLike,
+} from "./Definitions/Types";
 
-namespace GameJoy {
-	// Classes
-	export const Context = GContext;
-	export const BaseAction = GBaseAction;
-
-	// Actions
-	export const Actions = GActions;
-
-	// Type Checks
-	export const TypeChecks = Checks;
-
-	// Constants
-	export const VERSION = PKG_VERSION;
-}
-
-export = GameJoy;
+export const VERSION = PKG_VERSION;
