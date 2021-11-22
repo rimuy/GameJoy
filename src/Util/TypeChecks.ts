@@ -1,10 +1,43 @@
 import { t } from "@rbxts/t";
 
-import { Action, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
-import { ActionEntry, RawActionEntry, RawActionLike } from "../Definitions/Types";
+import { Action, Axis, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
+import { ActionEntry, AxisActionEntry, RawActionEntry, RawActionLike } from "../Definitions/Types";
+
+const actions = [
+	"Action",
+	"AxisAction",
+	"CompositeAction",
+	"DynamicAction",
+	"OptionalAction",
+	"SequenceAction",
+	"UnionAction",
+] as const;
+
+const axisActionEntries = [
+	Enum.UserInputType.MouseMovement,
+	Enum.UserInputType.MouseWheel,
+	Enum.UserInputType.Touch,
+	Enum.UserInputType.Gyro,
+	Enum.UserInputType.Accelerometer,
+	Enum.UserInputType.Gamepad1,
+	Enum.UserInputType.Gamepad2,
+	Enum.UserInputType.Gamepad3,
+	Enum.UserInputType.Gamepad4,
+	Enum.UserInputType.Gamepad5,
+	Enum.UserInputType.Gamepad6,
+	Enum.UserInputType.Gamepad7,
+	Enum.UserInputType.Gamepad8,
+	Enum.KeyCode.Thumbstick1,
+	Enum.KeyCode.Thumbstick2,
+	Enum.KeyCode.ButtonL1,
+	Enum.KeyCode.ButtonR1,
+	Enum.KeyCode.ButtonL2,
+	Enum.KeyCode.ButtonR2,
+] as const;
 
 interface ActionTypes<A extends RawActionEntry> {
 	Action: Action<A>;
+	AxisAction: Axis<AxisActionEntry>;
 	CompositeAction: Composite<A>;
 	DynamicAction: Dynamic<A>;
 	OptionalAction: Optional<A>;
@@ -13,7 +46,7 @@ interface ActionTypes<A extends RawActionEntry> {
 }
 
 export const isActionEqualTo = (
-	entry: RawActionEntry | ActionEntry,
+	entry: AxisActionEntry | RawActionEntry | ActionEntry,
 	key: Enum.KeyCode,
 	input: Enum.UserInputType,
 ) =>
@@ -25,14 +58,7 @@ export const isActionEqualTo = (
 	(typeIs(entry, "number") && input.Value === entry);
 
 export const isAction = <A extends RawActionEntry>(value: unknown): value is ActionEntry<A> =>
-	[
-		"Action",
-		"CompositeAction",
-		"DynamicAction",
-		"OptionalAction",
-		"SequenceAction",
-		"UnionAction",
-	].some(
+	actions.some(
 		(actionType) =>
 			type(value) === "table" &&
 			tostring(getmetatable(value as object)) === actionType,
@@ -65,3 +91,11 @@ export const ActionEntryIs = <A extends RawActionEntry, E extends keyof ActionTy
 	actionType: E,
 ): value is ActionTypes<A>[E] =>
 	type(value) === "table" && tostring(getmetatable(value as object)) === actionType;
+
+export const isAxisActionEntry = (value: unknown): value is AxisActionEntry =>
+	axisActionEntries.some(
+		(e) =>
+			(typeIs(value, "EnumItem") && e === value) ||
+			(typeIs(value, "string") && e.Name === value) ||
+			(typeIs(value, "number") && e.Value === value),
+	);
