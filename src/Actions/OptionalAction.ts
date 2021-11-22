@@ -24,7 +24,7 @@ export class OptionalAction<A extends RawActionEntry> extends BaseAction {
 			});
 
 			connection.Released(() => {
-				this.SetTriggered(false, true);
+				this.SetTriggered(false);
 				this.Changed.Fire();
 			});
 		});

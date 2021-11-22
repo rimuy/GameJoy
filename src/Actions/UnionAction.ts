@@ -24,10 +24,8 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 				});
 
 				connection.Released(() => {
-					if (this.IsPressed) {
-						this.Cancelled.Fire();
-						this.SetTriggered(false);
-					}
+					this.Cancelled.Fire();
+					this.SetTriggered(false);
 					this.Changed.Fire();
 				});
 			}
