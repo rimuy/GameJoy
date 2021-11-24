@@ -29,7 +29,7 @@ export class ActionQueue {
 		});
 	}
 
-	private reject(bin: Bin, action: ActionEntry, index: number) {
+	private Reject(bin: Bin, action: ActionEntry, index: number) {
 		bin.destroy();
 
 		this.Remove(index);
@@ -67,8 +67,8 @@ export class ActionQueue {
 		const i = this.queue.len() - 1;
 
 		if (i > 0) {
-			bin.add(action.Cancelled.Connect(() => this.reject(bin, action, i)));
-			bin.add(action.Released.Connect(() => this.reject(bin, action, i)));
+			bin.add(action.Cancelled.Connect(() => this.Reject(bin, action, i)));
+			bin.add(action.Released.Connect(() => this.Reject(bin, action, i)));
 		}
 
 		this.updated.Fire();
