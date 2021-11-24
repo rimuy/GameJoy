@@ -28,6 +28,13 @@ export abstract class BaseAction {
 
 	readonly Context: Context<ContextOptions> | undefined;
 
+	constructor() {
+		const conn = this.Connected.Connect(() => {
+			conn.Disconnect();
+			this.OnConnected();
+		});
+	}
+
 	protected SetTriggered(value: boolean, ignoreEventCall?: boolean) {
 		(this.IsPressed as boolean) = value;
 
@@ -38,6 +45,9 @@ export abstract class BaseAction {
 		}
 	}
 
+	protected OnConnected() {}
+
+	/** @internal */
 	SetContext<O extends ContextOptions>(context: Context<O> | undefined) {
 		(this.Context as unknown) = context;
 		this.Connected.Fire();

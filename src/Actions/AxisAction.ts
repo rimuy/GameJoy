@@ -18,21 +18,19 @@ export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 		this.Delta = new Vector3();
 		this.Position = new Vector3();
 		this.KeyCode = Enum.KeyCode.Unknown;
+	}
 
-		const conn = this.Connected.Connect(() => {
-			conn.Disconnect();
+	protected OnConnected() {
+		const action = new Action<A>(this.RawAction);
+		const connection = ActionConnection.From(action);
 
-			const action = new Action<A>(RawAction);
-			const connection = ActionConnection.From(action);
+		action.SetContext(this.Context);
 
-			action.SetContext(this.Context);
+		connection.Changed(() => this.Changed.Fire());
 
-			connection.Changed(() => this.Changed.Fire());
-
-			ActionConnection.From(this).Changed(() => {
-				this.SetTriggered(true);
-				this.SetTriggered(false, true);
-			});
+		ActionConnection.From(this).Changed(() => {
+			this.SetTriggered(true);
+			this.SetTriggered(false, true);
 		});
 	}
 }

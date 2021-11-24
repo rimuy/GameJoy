@@ -9,24 +9,22 @@ import { TransformAction } from "../Util/TransformAction";
 export class OptionalAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
 		super();
+	}
 
-		const conn = this.Connected.Connect(() => {
-			conn.Disconnect();
+	protected OnConnected() {
+		const action = TransformAction<A>(this.RawAction, Action, Union);
+		const connection = ActionConnection.From(action);
 
-			const action = TransformAction<A>(RawAction, Action, Union);
-			const connection = ActionConnection.From(action);
+		action.SetContext(this.Context);
 
-			action.SetContext(this.Context);
+		connection.Triggered(() => {
+			this.SetTriggered(true);
+			this.Changed.Fire();
+		});
 
-			connection.Triggered(() => {
-				this.SetTriggered(true);
-				this.Changed.Fire();
-			});
-
-			connection.Released(() => {
-				this.SetTriggered(false);
-				this.Changed.Fire();
-			});
+		connection.Released(() => {
+			this.SetTriggered(false);
+			this.Changed.Fire();
 		});
 	}
 }

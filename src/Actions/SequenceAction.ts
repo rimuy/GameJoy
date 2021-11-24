@@ -12,6 +12,8 @@ import * as t from "../Util/TypeChecks";
 export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 	private queue: Vec<A | ActionEntry<A> | Array<A | ActionEntry<A>>>;
 
+	private canCancel;
+
 	constructor(public readonly RawAction: Array<A | ActionEntry<A> | Array<A | ActionEntry<A>>>) {
 		super();
 
@@ -20,7 +22,7 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 		);
 
 		const queue = (this.queue = Vec.withCapacity(rawActions.size()));
-		let canCancel = false;
+		this.canCancel = false;
 
 		ActionConnection.From(this).Changed(() => {
 			const size = queue.asPtr().size();
@@ -32,49 +34,49 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 					.enumerate()
 					.all(([i, entry]) => RawAction[i] === entry)
 			) {
-				canCancel = true;
+				this.canCancel = true;
 
 				if (size === rawActions.size()) {
-					canCancel = false;
+					this.canCancel = false;
 					return this.SetTriggered(true);
 				}
 			}
 
-			if (this.IsPressed) this.SetTriggered((canCancel = false));
+			if (this.IsPressed) this.SetTriggered((this.canCancel = false));
 		});
+	}
 
-		const conn = this.Connected.Connect(() => {
-			conn.Disconnect();
+	protected OnConnected() {
+		const { queue } = this;
 
-			for (const entry of RawAction) {
-				const action = TransformAction<A>(entry, Action, Union);
-				const connection = ActionConnection.From(action);
+		for (const entry of this.RawAction) {
+			const action = TransformAction<A>(entry, Action, Union);
+			const connection = ActionConnection.From(action);
 
-				action.SetContext(this.Context);
+			action.SetContext(this.Context);
 
-				let began = false;
+			let began = false;
 
-				connection.Triggered(() => {
-					if (!t.ActionEntryIs(entry, "OptionalAction")) queue.push(entry);
-					began = true;
+			connection.Triggered(() => {
+				if (!t.ActionEntryIs(entry, "OptionalAction")) queue.push(entry);
+				began = true;
 
-					this.Changed.Fire();
-				});
+				this.Changed.Fire();
+			});
 
-				connection.Released(() => {
-					const index = queue.asPtr().findIndex((e) => e === entry);
-					if (began && index >= 0) queue.remove(index);
+			connection.Released(() => {
+				const index = queue.asPtr().findIndex((e) => e === entry);
+				if (began && index >= 0) queue.remove(index);
 
-					began = false;
+				began = false;
 
-					if (canCancel) {
-						canCancel = false;
-						this.Cancelled.Fire();
-					}
+				if (this.canCancel) {
+					this.canCancel = false;
+					this.Cancelled.Fire();
+				}
 
-					this.Changed.Fire();
-				});
-			}
-		});
+				this.Changed.Fire();
+			});
+		}
 	}
 }

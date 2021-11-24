@@ -39,11 +39,10 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 
 	constructor(public readonly RawAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
 		super();
+	}
 
-		const conn = this.Connected.Connect(() => {
-			conn.Disconnect();
-			this.ConnectAction(RawAction);
-		});
+	protected OnConnected() {
+		this.ConnectAction(this.RawAction);
 	}
 
 	Update(newAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
