@@ -1,4 +1,3 @@
-import { Result } from "@rbxts/rust-classes";
 import Signal from "@rbxts/signal";
 import { UserInputService as IS } from "@rbxts/services";
 import { Bin } from "@rbxts/bin";
@@ -6,8 +5,6 @@ import { Bin } from "@rbxts/bin";
 import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 
 import * as t from "./TypeChecks";
-
-const { ok: Ok } = Result;
 
 function checkInputs(
 	action: ActionEntry,
@@ -38,11 +35,8 @@ function checkInputs(
 export class ActionConnection {
 	private bin;
 
-	private lastInputPosition;
-
 	private constructor(private action: ActionEntry) {
 		this.bin = new Bin();
-		this.lastInputPosition = new Vector3();
 
 		this.bin.add(
 			action.Destroyed.Connect(() => {
