@@ -244,7 +244,7 @@ type ActionThatChanges = "X" | "Y" | "Z" | "A" | "B";
 const dynamic = new Dynamic<ActionThatChanges>(new Composite(["A", "B"]));
 ```
 
-> The `AnyAction` can be used if you don't want to filter the entries.
+> The `AnyAction` type can be used if you don't want to filter the entries.
 
 ### Using an Axis
 `Axis` provides support for inputs that have a continuous range. The action is triggered everytime the input is changed.
