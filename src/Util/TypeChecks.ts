@@ -80,7 +80,7 @@ export const isRawAction = t.union(
 
 export const isRawActionArray = t.array(isRawAction);
 
-export const isActionLike = t.union(isAction, isRawAction);
+export const isActionLike = t.union(isAction, isRawAction, isRawActionArray);
 
 export const isActionLikeArray = t.array(isActionLike);
 
