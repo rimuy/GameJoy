@@ -15,11 +15,10 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 	}
 
 	protected OnConnected() {
-		const {
-			Repeat = math.max(1, this.options.Repeat ?? 1),
-			Timing = math.max(0, this.options.Timing ?? 0),
-		} = this.options;
+		const { Repeat, Timing } = this.options;
 
+		const repeatTimes = math.max(1, Repeat ?? 1);
+		const timing = math.max(0, Timing ?? 0);
 		const connection = ActionConnection.From(this);
 		const newInputSignal = new Signal();
 
@@ -34,11 +33,11 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 			this.Changed.Fire();
 
 			new Promise<boolean>((resolve) => {
-				if (Repeat > 1) newInputSignal.Wait();
+				if (repeatTimes > 1) newInputSignal.Wait();
 
-				resolve(timesTriggered >= Repeat);
+				resolve(timesTriggered >= repeatTimes);
 			})
-				.timeout(Timing)
+				.timeout(timing)
 				.then(
 					(isCompleted) => {
 						if (isCompleted) {
@@ -59,7 +58,7 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 
 		connection.Ended(() => {
 			if (this.IsPressed && !cancelled) this.SetTriggered(false);
-			if (Repeat === 1) this.Released.Fire(false);
+			if (repeatTimes === 1) this.Released.Fire(false);
 
 			this.Changed.Fire();
 		});
