@@ -72,8 +72,6 @@ const { Action } = Actions;
 const context = new Context();
 ```
 
-
-
 > `Context` can be instantiated with an object parameter, used for configuration.
 
 #### OnBefore
@@ -97,6 +95,25 @@ context.Bind(action, () => {
 
 action.Released.Connect(() => {
         print("Q was released!");
+});
+```
+
+`Action` also accepts an object as the second parameter, used for configuration. The amount of times a key needs to be pressed and the maximum time between each press can be set up.
+
+```js
+let isRunning = false;
+
+const runAction = new Action("W", {
+        Repeat: 2,
+        Timing: 0.3,
+});
+
+context.Bind(runAction, () => {
+        isRunning = true;
+});
+
+runAction.Released.Connect(() => {
+        isRunning = false;
 });
 ```
 
