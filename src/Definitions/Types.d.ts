@@ -11,6 +11,8 @@ export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 
 export type ActionKey = RawActionEntry | Array<RawActionEntry | ActionEntry>;
 
+export type AnyAction = ActionEntry | ActionKey;
+
 export type AxisActionLike =
 	| Enum.UserInputType.MouseMovement
 	| Enum.UserInputType.MouseWheel
