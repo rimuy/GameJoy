@@ -77,6 +77,10 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 
 				this.Changed.Fire();
 			});
+
+			ActionConnection.From(this).Destroyed(() => {
+				action.Destroy();
+			});
 		}
 	}
 }

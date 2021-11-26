@@ -35,15 +35,9 @@ function checkInputs(
 export class ActionConnection {
 	private bin;
 
-	private constructor(private action: ActionEntry) {
+	private constructor(public Action: ActionEntry) {
 		this.bin = new Bin();
-
-		this.bin.add(
-			action.Destroyed.Connect(() => {
-				this.bin.destroy();
-				this.action.SetContext(undefined);
-			}),
-		);
+		this.Destroyed(() => this.bin.destroy());
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -61,11 +55,11 @@ export class ActionConnection {
 		processed: boolean,
 		callback: (processed: boolean) => void,
 	) {
-		checkInputs(this.action, keyCode, inputType, processed, callback);
+		checkInputs(this.Action, keyCode, inputType, processed, callback);
 	}
 
 	Began(callback: (processed: boolean) => void) {
-		this.Connect(this.action.Began, callback);
+		this.Connect(this.Action.Began, callback);
 		this.bin.add(
 			IS.InputBegan.Connect(({ KeyCode, UserInputType }, processed) =>
 				this.SendInputRequest(KeyCode, UserInputType, processed, callback),
@@ -74,7 +68,7 @@ export class ActionConnection {
 	}
 
 	Ended(callback: (processed: boolean) => void) {
-		this.Connect(this.action.Ended, callback);
+		this.Connect(this.Action.Ended, callback);
 		this.bin.add(
 			IS.InputEnded.Connect(({ KeyCode, UserInputType }, processed) =>
 				this.SendInputRequest(KeyCode, UserInputType, processed, callback),
@@ -83,36 +77,36 @@ export class ActionConnection {
 	}
 
 	Destroyed(callback: () => void) {
-		this.Connect(this.action.Destroyed, callback);
+		this.Connect(this.Action.Destroyed, callback);
 	}
 
 	Triggered(callback: (processed?: boolean) => void) {
-		this.Connect(this.action.Triggered, callback);
+		this.Connect(this.Action.Triggered, callback);
 	}
 
 	Released(callback: (processed?: boolean) => void) {
-		this.Connect(this.action.Released, callback);
+		this.Connect(this.Action.Released, callback);
 	}
 
 	Changed(callback: () => void) {
-		const { action } = this;
+		const { Action } = this;
 
-		this.Connect(action.Changed, callback);
+		this.Connect(Action.Changed, callback);
 
-		if (t.ActionEntryIs(action, "AxisAction")) {
+		if (t.ActionEntryIs(Action, "AxisAction")) {
 			this.bin.add(
 				IS.InputChanged.Connect(
 					({ Delta, KeyCode, UserInputType, Position }, processed) => {
 						if (
 							t.isActionEqualTo(
-								action.RawAction,
+								Action.RawAction,
 								KeyCode,
 								UserInputType,
 							)
 						) {
-							(action.Delta as Vector3) = Delta;
-							(action.Position as Vector3) = Position;
-							(action.KeyCode as Enum.KeyCode) = KeyCode;
+							(Action.Delta as Vector3) = Delta;
+							(Action.Position as Vector3) = Position;
+							(Action.KeyCode as Enum.KeyCode) = KeyCode;
 
 							this.SendInputRequest(
 								KeyCode,
@@ -128,10 +122,10 @@ export class ActionConnection {
 	}
 
 	Cancelled(callback: () => void) {
-		this.Connect(this.action.Cancelled, callback);
+		this.Connect(this.Action.Cancelled, callback);
 	}
 
 	Destroy() {
-		this.action.Destroyed.Fire();
+		this.Action.Destroy();
 	}
 }

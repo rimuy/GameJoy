@@ -1,4 +1,3 @@
-import { Bin } from "@rbxts/bin";
 import { RunService } from "@rbxts/services";
 import { Result, HashMap, Option } from "@rbxts/rust-classes";
 
@@ -23,8 +22,6 @@ const defaultOptions: Required<Omit<ContextOptions, "Process">> = {
 };
 
 export class Context<O extends ContextOptions> {
-	private bin;
-
 	private queue;
 
 	private actions: HashMap<ActionEntry, () => void | Promise<void>>;
@@ -44,7 +41,6 @@ export class Context<O extends ContextOptions> {
 			this.Options = defaultOptions as O;
 		}
 
-		this.bin = new Bin();
 		this.actions = HashMap.empty();
 		this.rawActions = HashMap.empty();
 		this.queue = new ActionQueue();
@@ -55,8 +51,9 @@ export class Context<O extends ContextOptions> {
 		const { RunSynchronously, OnBefore } = options;
 
 		action.SetContext(this);
+		const connection = ActionConnection.From(action);
 
-		ActionConnection.From(action).Triggered(() => {
+		connection.Triggered(() => {
 			const listener = this.actions
 				.get(action)
 				.expect("An error occurred while trying to unwrap action.");
@@ -66,16 +63,23 @@ export class Context<O extends ContextOptions> {
 				else this.queue.Add(action, listener);
 			}
 		});
+
+		connection.Destroyed(() => {
+			this.Unbind(action);
+		});
 	}
 
 	private RemoveAction(action: ActionEntry) {
-		action.Destroyed.Fire();
 		this.actions.remove(action);
 	}
 
 	private TryRemoveAction(actionOpt: Option<ActionEntry>) {
 		if (actionOpt.isSome()) {
-			this.RemoveAction(actionOpt.unwrap());
+			const action = actionOpt.unwrap();
+			this.RemoveAction(action);
+
+			action.Destroy();
+
 			return Ok({});
 		}
 
@@ -115,7 +119,9 @@ export class Context<O extends ContextOptions> {
 
 		if (t.isAction(action)) {
 			this.RemoveAction(action);
-		} else {
+		}
+
+		if (t.isRawAction(action) || t.isActionLikeArray(action)) {
 			const removed = rawActions.remove(action);
 
 			if (t.isActionLikeArray(action)) {
@@ -135,11 +141,11 @@ export class Context<O extends ContextOptions> {
 	}
 
 	UnbindAll() {
-		this.actions.iter().forEach(([action]) => action.Destroyed.Fire());
+		this.actions.iter().forEach(([action]) => action.Destroy());
+		this.rawActions.values().forEach((action) => action.Destroy());
 
 		this.actions.clear();
 		this.rawActions.clear();
-		this.bin.destroy();
 
 		return this;
 	}

@@ -23,14 +23,19 @@ export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 	protected OnConnected() {
 		const action = new Action<A>(this.RawAction);
 		const connection = ActionConnection.From(action);
+		const thisConnection = ActionConnection.From(this);
 
 		action.SetContext(this.Context);
 
 		connection.Changed(() => this.Changed.Fire());
 
-		ActionConnection.From(this).Changed(() => {
+		thisConnection.Changed(() => {
 			this.SetTriggered(true);
 			this.SetTriggered(false, true);
+		});
+
+		thisConnection.Destroyed(() => {
+			action.Destroy();
 		});
 	}
 }

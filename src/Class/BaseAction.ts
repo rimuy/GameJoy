@@ -29,10 +29,8 @@ export abstract class BaseAction {
 	readonly Context: Context<ContextOptions> | undefined;
 
 	constructor() {
-		const conn = this.Connected.Connect(() => {
-			conn.Disconnect();
-			this.OnConnected();
-		});
+		this.Connected.Connect(() => this.OnConnected());
+		this.Destroyed.Connect(() => this.SetContext(undefined));
 	}
 
 	protected SetTriggered(value: boolean, ignoreEventCall?: boolean) {
@@ -51,5 +49,9 @@ export abstract class BaseAction {
 	SetContext<O extends ContextOptions>(context: Context<O> | undefined) {
 		(this.Context as unknown) = context;
 		this.Connected.Fire();
+	}
+
+	Destroy() {
+		this.Destroyed.Fire();
 	}
 }

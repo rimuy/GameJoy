@@ -39,6 +39,10 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 
 	constructor(public readonly RawAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
 		super();
+
+		ActionConnection.From(this).Destroyed(() => {
+			this.CurrentConnection?.Action.Destroy();
+		});
 	}
 
 	protected OnConnected() {

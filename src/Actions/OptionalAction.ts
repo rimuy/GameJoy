@@ -26,5 +26,9 @@ export class OptionalAction<A extends RawActionEntry> extends BaseAction {
 			this.SetTriggered(false);
 			this.Changed.Fire();
 		});
+
+		ActionConnection.From(this).Destroyed(() => {
+			action.Destroy();
+		});
 	}
 }
