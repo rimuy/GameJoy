@@ -27,6 +27,13 @@
 	},
 	"author": "Rimuy",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/HylianBasement/GameJoy.git"
+	},
+	"bugs": {
+		"url": "https://github.com/HylianBasement/GameJoy/issues"
+	},
 	"files": [
 		"out"
 	],
