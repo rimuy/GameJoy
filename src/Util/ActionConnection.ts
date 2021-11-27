@@ -93,7 +93,7 @@ export class ActionConnection {
 
 		this.Connect(Action.Changed, callback);
 
-		if (t.ActionEntryIs(Action, "AxisAction")) {
+		if (t.actionEntryIs(Action, "AxisAction")) {
 			this.bin.add(
 				IS.InputChanged.Connect(
 					({ Delta, KeyCode, UserInputType, Position }, processed) => {

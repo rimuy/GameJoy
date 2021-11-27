@@ -6,7 +6,7 @@ import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
 
-import { TransformAction } from "../Util/TransformAction";
+import { transformAction } from "../Util/transformAction";
 import * as t from "../Util/TypeChecks";
 
 export class SequenceAction<A extends RawActionEntry> extends BaseAction {
@@ -18,7 +18,7 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 		super();
 
 		const rawActions = RawAction.filter(
-			(action) => !t.isAction(action) || !t.ActionEntryIs(action, "OptionalAction"),
+			(action) => !t.isAction(action) || !t.actionEntryIs(action, "OptionalAction"),
 		);
 
 		const queue = (this.queue = Vec.withCapacity(rawActions.size()));
@@ -50,7 +50,7 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 		const { queue } = this;
 
 		for (const entry of this.RawAction) {
-			const action = TransformAction<A>(entry, Action, Union);
+			const action = transformAction<A>(entry, Action, Union);
 			const connection = ActionConnection.From(action);
 
 			action.SetContext(this.Context);
@@ -58,7 +58,7 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 			let began = false;
 
 			connection.Triggered(() => {
-				if (!t.ActionEntryIs(entry, "OptionalAction")) queue.push(entry);
+				if (!t.actionEntryIs(entry, "OptionalAction")) queue.push(entry);
 				began = true;
 
 				this.Changed.Fire();

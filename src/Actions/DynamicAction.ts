@@ -6,14 +6,14 @@ import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
 
-import { TransformAction } from "../Util/TransformAction";
+import { transformAction } from "../Util/transformAction";
 import * as t from "../Util/TypeChecks";
 
 export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 	private CurrentConnection: ActionConnection | undefined;
 
 	private ConnectAction(newAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
-		const action = TransformAction<A>(newAction, Action, Union);
+		const action = transformAction<A>(newAction, Action, Union);
 		const connection = ActionConnection.From(action);
 
 		(this.RawAction as unknown) = action.RawAction;

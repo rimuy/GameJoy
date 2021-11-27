@@ -3,10 +3,10 @@ import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 
 import * as t from "./TypeChecks";
 
-export function TransformAction<A extends RawActionEntry>(
+export function transformAction<A extends RawActionEntry>(
 	entry: A | ActionEntry<A> | Array<A | ActionEntry<A>>,
 	ActionClass: typeof Action,
-	ArrayActionClass: typeof Union,
+	ActionArrayClass: typeof Union,
 ) {
 	if (!t.isValidActionEntry(entry)) {
 		error(debug.traceback("Invalid action entry."));
@@ -15,6 +15,6 @@ export function TransformAction<A extends RawActionEntry>(
 	return t.isAction(entry)
 		? entry
 		: t.isActionLikeArray(entry)
-		? new ArrayActionClass<A>(entry)
+		? new ActionArrayClass<A>(entry)
 		: new ActionClass<A>(entry);
 }

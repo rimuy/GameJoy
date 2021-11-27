@@ -8,7 +8,7 @@ import { ActionEntry, ActionKey, ContextOptions, RawActionEntry } from "../Defin
 import { Action, Union } from "../Actions";
 
 import { ActionConnection } from "../Util/ActionConnection";
-import { TransformAction } from "../Util/TransformAction";
+import { transformAction } from "../Util/transformAction";
 
 import * as t from "../Util/TypeChecks";
 
@@ -102,7 +102,7 @@ export class Context<O extends ContextOptions> {
 			actions.insert(action, listener);
 		} else {
 			this.rawActions.entry(action).orInsertWith(() => {
-				const actionEntry = TransformAction<R>(action, Action, Union);
+				const actionEntry = transformAction<R>(action, Action, Union);
 
 				this.ConnectAction<R>(actionEntry);
 

@@ -6,11 +6,11 @@ import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
 
-import { TransformAction } from "../Util/TransformAction";
+import { transformAction } from "../Util/transformAction";
 import * as t from "../Util/TypeChecks";
 
 function isOptional<A extends RawActionEntry>(action: ActionEntry<A>) {
-	return t.ActionEntryIs(action, "OptionalAction");
+	return t.actionEntryIs(action, "OptionalAction");
 }
 
 export class CompositeAction<A extends RawActionEntry> extends BaseAction {
@@ -22,7 +22,7 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 		const status = (this.status = HashMap.empty());
 
 		for (const entry of this.RawAction) {
-			const action = TransformAction<A>(entry, Action, Union);
+			const action = transformAction<A>(entry, Action, Union);
 			status.insert(action, isOptional(action));
 		}
 

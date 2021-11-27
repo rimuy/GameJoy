@@ -3,6 +3,16 @@ import { t } from "@rbxts/t";
 import { Action, Axis, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
 import { ActionEntry, AxisActionEntry, RawActionEntry, RawActionLike } from "../Definitions/Types";
 
+interface ActionTypes<A extends RawActionEntry> {
+	Action: Action<A>;
+	AxisAction: Axis<AxisActionEntry>;
+	CompositeAction: Composite<A>;
+	DynamicAction: Dynamic<A>;
+	OptionalAction: Optional<A>;
+	SequenceAction: Sequence<A>;
+	UnionAction: Union<A>;
+}
+
 const actions = [
 	"Action",
 	"AxisAction",
@@ -35,15 +45,8 @@ const axisActionEntries = [
 	Enum.KeyCode.ButtonR2,
 ] as const;
 
-interface ActionTypes<A extends RawActionEntry> {
-	Action: Action<A>;
-	AxisAction: Axis<AxisActionEntry>;
-	CompositeAction: Composite<A>;
-	DynamicAction: Dynamic<A>;
-	OptionalAction: Optional<A>;
-	SequenceAction: Sequence<A>;
-	UnionAction: Union<A>;
-}
+const classIsOfType = (value: unknown, classType: string) =>
+	type(value) === "table" && tostring(getmetatable(value as object)) === classType;
 
 export const isActionEqualTo = (
 	entry: AxisActionEntry | RawActionEntry | ActionEntry,
@@ -58,11 +61,7 @@ export const isActionEqualTo = (
 	(typeIs(entry, "number") && input.Value === entry);
 
 export const isAction = <A extends RawActionEntry>(value: unknown): value is ActionEntry<A> =>
-	actions.some(
-		(actionType) =>
-			type(value) === "table" &&
-			tostring(getmetatable(value as object)) === actionType,
-	);
+	actions.some((actionType) => classIsOfType(value, actionType));
 
 export const isActionArray = t.array(isAction);
 
@@ -86,11 +85,10 @@ export const isActionLikeArray = t.array(isActionLike);
 
 export const isValidActionEntry = t.union(isActionLike, isActionLikeArray);
 
-export const ActionEntryIs = <A extends RawActionEntry, E extends keyof ActionTypes<A>>(
+export const actionEntryIs = <A extends RawActionEntry, E extends keyof ActionTypes<A>>(
 	value: unknown,
 	actionType: E,
-): value is ActionTypes<A>[E] =>
-	type(value) === "table" && tostring(getmetatable(value as object)) === actionType;
+): value is ActionTypes<A>[E] => classIsOfType(value, actionType);
 
 export const isAxisActionEntry = (value: unknown): value is AxisActionEntry =>
 	axisActionEntries.some(
