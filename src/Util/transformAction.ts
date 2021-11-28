@@ -15,6 +15,6 @@ export function transformAction<A extends RawActionEntry>(
 	return t.isAction(entry)
 		? entry
 		: t.isActionLikeArray(entry)
-		? new ActionArrayClass<A>(entry)
+		? new ActionArrayClass<A>(entry as never)
 		: new ActionClass<A>(entry);
 }

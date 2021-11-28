@@ -1,7 +1,14 @@
 import { t } from "@rbxts/t";
 
+import aliases from "./aliases";
 import { Action, Axis, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
-import { ActionEntry, AxisActionEntry, RawActionEntry, RawActionLike } from "../Definitions/Types";
+import {
+	ActionEntry,
+	AxisActionEntry,
+	AliasKey,
+	RawActionEntry,
+	RawActionLike,
+} from "../Definitions/Types";
 
 interface ActionTypes<A extends RawActionEntry> {
 	Action: Action<A>;
@@ -67,8 +74,15 @@ export const isActionArray = t.array(isAction);
 
 export const EnumAlias =
 	<T extends Enum>(rEnum: T) =>
-	(value: unknown): value is RawActionLike["Name"] | RawActionLike["Value"] =>
-		rEnum.GetEnumItems().some((item) => item.Name === value || item.Value === value);
+	(value: unknown): value is RawActionLike["Name"] | RawActionLike["Value"] | AliasKey =>
+		rEnum
+			.GetEnumItems()
+			.some(
+				(item) =>
+					item.Name === value ||
+					item.Value === value ||
+					aliases.get(value as AliasKey) === item.Name,
+			);
 
 export const isRawAction = t.union(
 	EnumAlias(Enum.KeyCode),

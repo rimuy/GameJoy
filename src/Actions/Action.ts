@@ -1,8 +1,11 @@
 import Signal from "@rbxts/signal";
 
 import { ActionConnection } from "../Util/ActionConnection";
+import aliases from "../Util/aliases";
+
 import { BaseAction } from "../Class/BaseAction";
-import { RawActionEntry } from "../Definitions/Types";
+
+import { AliasKey, RawActionEntry } from "../Definitions/Types";
 
 interface ActionOptions {
 	Repeat?: number;
@@ -12,6 +15,11 @@ interface ActionOptions {
 export class Action<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: A, private options: ActionOptions = {}) {
 		super();
+		const alias = aliases.get(RawAction as AliasKey);
+
+		if (alias) {
+			this.RawAction = alias as A;
+		}
 	}
 
 	protected OnConnected() {

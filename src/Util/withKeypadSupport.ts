@@ -1,5 +1,7 @@
 import { Union } from "../Actions";
 
+import aliases from "./aliases";
+
 type NumberEnums =
 	| Enum.KeyCode.Zero
 	| Enum.KeyCode.One
@@ -18,7 +20,9 @@ type SpecialCharEnums =
 	| Enum.KeyCode.Minus
 	| Enum.KeyCode.Period;
 
-type KeypadEntry = CastsToEnum<NumberEnums> | CastsToEnum<SpecialCharEnums>;
+type KeypadEntry = CastsToEnum<NumberEnums> | CastsToEnum<SpecialCharEnums> | StringNumbers;
+
+type StringNumbers = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 const keypadIndexDiff = 208;
 
@@ -33,7 +37,9 @@ export function withKeypadSupport<T extends KeypadEntry>(entry: T) {
 	const value = typeIs(entry, "EnumItem")
 		? entry.Value
 		: typeIs(entry, "string")
-		? Enum.KeyCode[entry as NumberEnums["Name"] | SpecialCharEnums["Name"]].Value
+		? aliases.has(entry as StringNumbers)
+			? Enum.KeyCode[aliases.get(entry as StringNumbers)!].Value
+			: Enum.KeyCode[entry as NumberEnums["Name"] | SpecialCharEnums["Name"]].Value
 		: typeIs(entry, "number")
 		? entry
 		: entry;

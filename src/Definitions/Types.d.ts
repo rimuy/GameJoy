@@ -1,4 +1,5 @@
 import { Action, Axis, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
+import aliases from "../Util/aliases";
 
 export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Action<A>
@@ -10,6 +11,10 @@ export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Union<A>;
 
 export type ActionKey = RawActionEntry | Array<RawActionEntry | ActionEntry>;
+
+export type Aliases = typeof aliases;
+
+export type AliasKey = Aliases extends ReadonlyMap<infer K, infer _> ? K : never;
 
 export type AnyAction = ActionEntry | ActionKey;
 
@@ -38,7 +43,7 @@ export type AxisActionEntry = CastsToEnum<AxisActionLike>;
 
 export type RawActionLike = Enum.KeyCode | Enum.UserInputType;
 
-export type RawActionEntry = CastsToEnum<RawActionLike>;
+export type RawActionEntry = CastsToEnum<RawActionLike> | AliasKey;
 
 export interface ContextOptions {
 	readonly OnBefore?: () => boolean;

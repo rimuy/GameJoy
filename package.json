@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/gamejoy",
-	"version": "1.0.0-alpha.8",
+	"version": "1.0.0-alpha.9",
 	"description": "",
 	"main": "out/init.lua",
 	"types": "out/index.d.ts",
