@@ -30,7 +30,7 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 			});
 
 			thisConnection.Destroyed(() => {
-				connection.Destroy();
+				action.Destroy();
 				this.Changed.Fire();
 			});
 		}
