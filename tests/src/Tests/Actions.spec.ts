@@ -133,6 +133,27 @@ export = () => {
 			expect(e.Context).to.equal(ctx);
 		});
 	});
+	describe("MiddlewareAction", () => {
+		const { Action, Middleware } = Actions;
+
+		it("Action check with pair numbers", () => {
+			const passed = new Array<true>(6);
+
+			const q = new Action("Q");
+			let n = 0;
+
+			ctx.Bind(new Middleware(q, () => n % 2 === 0), () => {
+				passed.push(true);
+			});
+
+			for (let i = 0; i < 6; i++) {
+				q.Began.Fire(false);
+				n++;
+			}
+
+			expect(passed.size()).to.equal(4);
+		});
+	});
 	describe("SequenceAction", () => {
 		const { Action, Optional, Sequence } = Actions;
 
@@ -177,6 +198,31 @@ export = () => {
 			executeOrder([r, e, q], false);
 
 			executeOrder([q, e, r], true);
+
+			expect(passed.size()).to.equal(2);
+		});
+	});
+	describe("SynchronousAction", () => {
+		const { Action, Sync } = Actions;
+
+		it("Normal action and a synchronous action", () => {
+			const passed = new Array<true>(3);
+
+			const q = new Action("Q");
+			const e = new Sync("E");
+
+			ctx.Bind(q, () => {
+				passed.push(true);
+				task.wait(1);
+			});
+
+			ctx.Bind(e, () => {
+				passed.push(true);
+			});
+
+			q.Began.Fire(false);
+			q.Began.Fire(false);
+			e.Triggered.Fire();
 
 			expect(passed.size()).to.equal(2);
 		});
