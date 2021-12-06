@@ -146,7 +146,7 @@ export = () => {
 				passed.push(true);
 			});
 
-			for (let i = 0; i < 6; i++) {
+			for (let i = 0; i <= 6; i++) {
 				q.Began.Fire(false);
 				n++;
 			}
