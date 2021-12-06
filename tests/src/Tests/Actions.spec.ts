@@ -116,21 +116,21 @@ export = () => {
 		it("Update", () => {
 			const passed = new Array<true>(3);
 
-			const q = new Action("Q");
-			const e = new Action("E");
-			const dyn = new Dynamic<"Q" | "E">(q);
+			const j = new Action("J");
+			const k = new Action("K");
+			const dyn = new Dynamic<"J" | "K">(j);
 
 			ctx.Bind(dyn, () => {
 				passed.push(true);
 			});
 
-			q.Began.Fire(false);
-			dyn.Update(e);
-			e.Began.Fire(false);
+			j.Began.Fire(false);
+			dyn.Update(k);
+			k.Began.Fire(false);
 
 			expect(passed.size()).to.equal(2);
-			expect(q.Context).to.never.be.ok();
-			expect(e.Context).to.equal(ctx);
+			expect(j.Context).to.never.be.ok();
+			expect(k.Context).to.equal(ctx);
 		});
 	});
 	describe("MiddlewareAction", () => {
@@ -233,15 +233,15 @@ export = () => {
 		it("List of actions", () => {
 			const passed = new Array<true>(2);
 
-			const q = new Action("Q");
-			const e = new Action("E");
+			const m = new Action("M");
+			const n = new Action("N");
 
-			ctx.Bind([q, e], () => {
+			ctx.Bind([m, n], () => {
 				passed.push(true);
 			});
 
-			q.Began.Fire(false);
-			e.Began.Fire(false);
+			m.Began.Fire(false);
+			n.Began.Fire(false);
 
 			expect(passed.size()).to.equal(2);
 		});
