@@ -1,5 +1,5 @@
 import { ActionConnection } from "../Util/ActionConnection";
-import { ActionEntry, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
@@ -7,7 +7,7 @@ import { UnionAction as Union } from "./UnionAction";
 import { transformAction } from "../Util/transformAction";
 
 export class OptionalAction<A extends RawActionEntry> extends BaseAction {
-	constructor(public readonly RawAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
+	constructor(public readonly RawAction: ActionLike<A> | ActionLikeArray<A>) {
 		super();
 	}
 

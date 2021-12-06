@@ -1,4 +1,4 @@
-import { ActionEntry, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
@@ -8,7 +8,7 @@ import { ActionConnection } from "../Util/ActionConnection";
 import { transformAction } from "../Util/transformAction";
 
 export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
-	constructor(public readonly RawAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
+	constructor(public readonly RawAction: ActionLike<A> | ActionLikeArray<A>) {
 		super();
 	}
 

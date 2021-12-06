@@ -1,7 +1,7 @@
 import { Vec } from "@rbxts/rust-classes";
 
 import { ActionConnection } from "../Util/ActionConnection";
-import { ActionEntry, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
@@ -10,11 +10,11 @@ import { transformAction } from "../Util/transformAction";
 import * as t from "../Util/TypeChecks";
 
 export class SequenceAction<A extends RawActionEntry> extends BaseAction {
-	private queue: Vec<A | ActionEntry<A> | Array<A | ActionEntry<A>>>;
+	private queue: Vec<ActionLike<A> | ActionLikeArray<A>>;
 
 	private canCancel;
 
-	constructor(public readonly RawAction: Array<A | ActionEntry<A> | Array<A | ActionEntry<A>>>) {
+	constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
 
 		const rawActions = RawAction.filter(

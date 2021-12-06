@@ -22,7 +22,11 @@ export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Sync<A>
 	| Union<A>;
 
-export type ActionKey = RawActionEntry | Array<RawActionEntry | ActionEntry>;
+export type ActionLike<A extends RawActionEntry> = A | ActionEntry<A>;
+
+export type ActionLikeArray<A extends RawActionEntry> = Array<ActionLike<A> | ActionLikeArray<A>>;
+
+export type ActionKey = ActionLike<RawActionEntry> | ActionLikeArray<RawActionEntry>;
 
 export type Aliases = typeof aliases;
 
@@ -151,9 +155,9 @@ export type UnusedKeys =
 
 export type AxisActionEntry = CastsToEnum<AxisActionLike>;
 
-export type RawActionLike = Exclude<Enum.KeyCode | Enum.UserInputType, UnusedKeys>;
+export type RawAction = Exclude<Enum.KeyCode | Enum.UserInputType, UnusedKeys>;
 
-export type RawActionEntry = CastsToEnum<RawActionLike> | AliasKey;
+export type RawActionEntry = CastsToEnum<RawAction> | AliasKey;
 
 export interface ContextOptions {
 	readonly OnBefore?: () => boolean;

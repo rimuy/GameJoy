@@ -14,13 +14,7 @@ import {
 	Union,
 } from "../Actions";
 
-import {
-	ActionEntry,
-	AxisActionEntry,
-	AliasKey,
-	RawActionEntry,
-	RawActionLike,
-} from "../Definitions/Types";
+import { ActionEntry, AxisActionEntry, AliasKey, RawActionEntry, RawAction } from "../Definitions/Types";
 
 interface ActionTypes<A extends RawActionEntry> {
 	Action: Action<A>;
@@ -90,7 +84,7 @@ export const isActionArray = t.array(isAction);
 
 export const EnumAlias =
 	<T extends Enum>(rEnum: T) =>
-	(value: unknown): value is RawActionLike["Name"] | RawActionLike["Value"] | AliasKey =>
+	(value: unknown): value is RawAction["Name"] | RawAction["Value"] | AliasKey =>
 		rEnum
 			.GetEnumItems()
 			.some(

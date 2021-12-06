@@ -1,12 +1,12 @@
 import { ActionConnection } from "../Util/ActionConnection";
-import { ActionEntry, RawActionEntry } from "../Definitions/Types";
+import { ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 
 import { transformAction } from "../Util/transformAction";
 
 export class UnionAction<A extends RawActionEntry> extends BaseAction {
-	constructor(public readonly RawAction: Array<A | ActionEntry<A> | Array<A | ActionEntry<A>>>) {
+	constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
 	}
 

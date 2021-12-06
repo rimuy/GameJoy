@@ -3,7 +3,14 @@ import { Result, HashMap, Option } from "@rbxts/rust-classes";
 
 import { ActionQueue } from "./ActionQueue";
 
-import { ActionEntry, ActionKey, ContextOptions, RawActionEntry } from "../Definitions/Types";
+import {
+	ActionEntry,
+	ActionLike,
+	ActionLikeArray,
+	ActionKey,
+	ContextOptions,
+	RawActionEntry,
+} from "../Definitions/Types";
 
 import { Action, Union } from "../Actions";
 
@@ -96,8 +103,8 @@ export class Context<O extends ContextOptions> {
 		return this.actions.containsKey(action);
 	}
 
-	Bind<R extends RawActionEntry, A extends ActionEntry<R>>(
-		action: A | R | Array<A | R>,
+	Bind<R extends RawActionEntry, A extends ActionLike<R>>(
+		action: A | ActionLikeArray<R>,
 		listener: () => void | Promise<void>,
 	) {
 		const { actions } = this;
@@ -120,7 +127,7 @@ export class Context<O extends ContextOptions> {
 		return this;
 	}
 
-	Unbind<R extends RawActionEntry, A extends ActionEntry<R>>(action: A | R | Array<A | R>) {
+	Unbind<R extends RawActionEntry, A extends ActionLike<R>>(action: A | ActionLikeArray<R>) {
 		const { rawActions } = this;
 
 		if (t.isAction(action)) {

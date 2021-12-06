@@ -1,6 +1,6 @@
 import Signal from "@rbxts/signal";
 
-import { ActionEntry, RawActionEntry } from "../Definitions/Types";
+import { ActionEntry, ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { ActionConnection } from "../Util/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
@@ -12,7 +12,7 @@ import * as t from "../Util/TypeChecks";
 export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 	private CurrentConnection: ActionConnection | undefined;
 
-	private ConnectAction(newAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
+	private ConnectAction(newAction: ActionLike<A> | ActionLikeArray<A>) {
 		const action = transformAction<A>(newAction, Action, Union);
 		const connection = ActionConnection.From(action);
 
