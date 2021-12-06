@@ -7,78 +7,87 @@ import { ActionEntry } from "../Definitions/Types";
 const { some: Some } = Option;
 
 export class ActionQueue {
-	private queue: Vec<{
-		action: ActionEntry;
-		pending: () => Promise<void>;
-		isExecuting: boolean;
+	private Queue: Vec<{
+		Action: ActionEntry;
+		Pending: () => Promise<void>;
+		IsExecuting: boolean;
 	}>;
 
-	private updated = new Signal();
+	private Updated = new Signal();
 
 	constructor() {
-		this.queue = Vec.vec();
+		this.Queue = Vec.vec();
 
-		this.updated.Connect(() => {
-			this.queue.first().andWith((entry) => {
-				if (!entry.isExecuting) {
-					entry.isExecuting = true;
-					entry.pending();
+		this.Updated.Connect(() => {
+			this.Queue.first().andWith((entry) => {
+				if (!entry.IsExecuting) {
+					entry.IsExecuting = true;
+					entry.Pending();
 				}
 				return Some({});
 			});
 		});
 	}
 
-	private Reject(bin: Bin, action: ActionEntry, index: number) {
+	private Reject(bin: Bin, action: ActionEntry) {
 		bin.destroy();
 
-		this.Remove(index);
+		this.Remove(action);
 		action.Rejected.Fire();
 	}
 
 	Add(action: ActionEntry, listener: () => void | Promise<void>) {
-		const bin = new Bin();
+		const { Queue, Updated } = this;
 
-		const pending = () => {
-			const execute = new Promise<void>((resolve) => {
-				task.spawn(() => {
-					listener();
-					this.queue.remove(0);
-					action.Resolved.Fire();
+		if (!Queue.asPtr().some(({ Action: a }) => action === a)) {
+			const bin = new Bin();
 
-					resolve();
+			const pending = () => {
+				const execute = new Promise<void>((resolve) => {
+					task.spawn(() => {
+						listener();
+						Queue.remove(0);
+						action.Resolved.Fire();
+
+						resolve();
+					});
 				});
+
+				execute.then(() => {
+					bin.destroy();
+					Updated.Fire();
+				});
+
+				return execute;
+			};
+
+			Queue.push({
+				Action: action,
+				Pending: pending,
+				IsExecuting: false,
 			});
 
-			execute.then(() => {
-				bin.destroy();
-				this.updated.Fire();
-			});
+			const i = Queue.len();
 
-			return execute;
-		};
+			if (i > 1) {
+				bin.add(action.Cancelled.Connect(() => this.Reject(bin, action)));
+				bin.add(action.Released.Connect(() => this.Reject(bin, action)));
+			}
 
-		this.queue.push({
-			action,
-			pending,
-			isExecuting: false,
-		});
-
-		const i = this.queue.len() - 1;
-
-		if (i > 0) {
-			bin.add(action.Cancelled.Connect(() => this.Reject(bin, action, i)));
-			bin.add(action.Released.Connect(() => this.Reject(bin, action, i)));
+			Updated.Fire();
 		}
-
-		this.updated.Fire();
 	}
 
-	Remove(index: number) {
-		this.queue.get(index).andWith(() => {
-			this.queue.remove(index);
-			this.updated.Fire();
-			return Some({});
-		});
+	Remove(action: ActionEntry) {
+		const { Queue, Updated } = this;
+
+		Queue.iter()
+			.enumerate()
+			.find(([, { Action: a }]) => action === a)
+			.andWith(([i]) => {
+				Queue.remove(i);
+				Updated.Fire();
+				return Some({});
+			});
 	}
 }
