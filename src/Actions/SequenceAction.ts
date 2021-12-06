@@ -32,7 +32,11 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 				queue
 					.iter()
 					.enumerate()
-					.all(([i, entry]) => RawAction[i] === entry)
+					.all(
+						([i, entry]) =>
+							RawAction[i] === entry ||
+							t.actionEntryIs(RawAction[i], "OptionalAction"),
+					)
 			) {
 				this.canCancel = true;
 

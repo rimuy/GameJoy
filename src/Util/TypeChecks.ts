@@ -1,7 +1,19 @@
 import { t } from "@rbxts/t";
 
 import aliases from "./aliases";
-import { Action, Axis, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
+
+import {
+	Action,
+	Axis,
+	Composite,
+	Dynamic,
+	Middleware,
+	Optional,
+	Sequence,
+	Sync,
+	Union,
+} from "../Actions";
+
 import {
 	ActionEntry,
 	AxisActionEntry,
@@ -15,8 +27,10 @@ interface ActionTypes<A extends RawActionEntry> {
 	AxisAction: Axis<AxisActionEntry>;
 	CompositeAction: Composite<A>;
 	DynamicAction: Dynamic<A>;
+	MiddlewareAction: Middleware<A>;
 	OptionalAction: Optional<A>;
 	SequenceAction: Sequence<A>;
+	SynchronousAction: Sync<A>;
 	UnionAction: Union<A>;
 }
 
@@ -25,8 +39,10 @@ const actions = [
 	"AxisAction",
 	"CompositeAction",
 	"DynamicAction",
+	"MiddlewareAction",
 	"OptionalAction",
 	"SequenceAction",
+	"SynchronousAction",
 	"UnionAction",
 ] as const;
 

@@ -1,13 +1,25 @@
-import { Action, Axis, Composite, Dynamic, Optional, Sequence, Union } from "../Actions";
+import {
+	Action,
+	Axis,
+	Composite,
+	Dynamic,
+	Middleware,
+	Optional,
+	Sequence,
+	Sync,
+	Union,
+} from "../Actions";
 import aliases from "../Util/aliases";
 
 export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Action<A>
 	| Axis<AxisActionEntry>
 	| Composite<A>
+	| Middleware<A>
 	| Dynamic<A>
 	| Optional<A>
 	| Sequence<A>
+	| Sync<A>
 	| Union<A>;
 
 export type ActionKey = RawActionEntry | Array<RawActionEntry | ActionEntry>;

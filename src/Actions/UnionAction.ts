@@ -11,6 +11,8 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	protected OnConnected() {
+		const thisConnection = ActionConnection.From(this);
+
 		for (const entry of this.RawAction) {
 			const action = transformAction<A>(entry, Action, UnionAction);
 			const connection = ActionConnection.From(action);
@@ -23,13 +25,13 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 			});
 
 			connection.Released(() => {
-				this.Cancelled.Fire();
 				this.SetTriggered(false);
 				this.Changed.Fire();
 			});
 
-			ActionConnection.From(this).Destroyed(() => {
-				action.Destroy();
+			thisConnection.Destroyed(() => {
+				connection.Destroy();
+				this.Changed.Fire();
 			});
 		}
 	}

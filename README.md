@@ -57,6 +57,8 @@ npm i @rbxts/gamejoy
   * [Making one of the inputs optional](#making-one-of-the-inputs-optional)
   * [Updating an existing action](#updating-an-existing-action)
   * [Using an Axis](#using-an-axis)
+  * [Creating a conditional action](#creating-a-conditional-action)
+  * [Whitelisting actions from async behaviour](#whitelisting-actions-from-async-behaviour)
 - [Removing actions](#removing-actions)
 - [License](#license)
 
@@ -273,6 +275,24 @@ context
         .Bind(l2, () => {
                 print(l2.Position.Z);
         });
+```
+
+### Creating a conditional action
+Sometimes you want to specify when an action can be triggered, but don't want to configure the context to do so, because that would apply the check for all the bound actions. `Middleware` accepts a callback that can be used to set a condition to your action.
+
+```js
+context.Bind(new Middleware("M", () => os.time() % 2 === 0), () => {
+        print("Works sometimes...");
+});
+```
+
+### Whitelisting actions from async behaviour
+Just like the above, `Sync` also aims to apply a configuration trait to a specific action, this time replicating the `RunSynchronously` option.
+
+```js
+context.Bind(new Sync("C"), () => {
+        print("This was triggered synchronously!");
+});
 ```
 
 ## Removing actions

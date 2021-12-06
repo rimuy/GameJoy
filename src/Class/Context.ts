@@ -59,8 +59,14 @@ export class Context<O extends ContextOptions> {
 				.expect("An error occurred while trying to unwrap action.");
 
 			if (OnBefore() === true) {
-				if (RunSynchronously === true) listener();
-				else this.queue.Add(action, listener);
+				if (
+					RunSynchronously === true ||
+					t.actionEntryIs(action, "SynchronousAction")
+				) {
+					listener();
+				} else {
+					this.queue.Add(action, listener);
+				}
 			}
 		});
 

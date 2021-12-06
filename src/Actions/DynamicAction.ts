@@ -20,17 +20,20 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 		action.SetContext(this.Context);
 
 		connection.Triggered(() => {
-			this.SetTriggered(true);
-			this.Changed.Fire();
+			if (!this.IsPressed) {
+				this.SetTriggered(true);
+				this.Changed.Fire();
+			}
 		});
 
 		connection.Released(() => {
 			if (this.IsPressed) {
-				this.Cancelled.Fire();
 				this.SetTriggered(false);
+				this.Changed.Fire();
 			}
-			this.Changed.Fire();
 		});
+
+		connection.Cancelled(() => this.Cancelled.Fire());
 
 		this.CurrentConnection = connection;
 	}
@@ -41,7 +44,7 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 		super();
 
 		ActionConnection.From(this).Destroyed(() => {
-			this.CurrentConnection?.Action.Destroy();
+			this.CurrentConnection?.Destroy();
 		});
 	}
 
