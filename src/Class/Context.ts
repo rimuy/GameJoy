@@ -144,7 +144,10 @@ export class Context<O extends ContextOptions> {
 					this.TryRemoveAction(
 						this.actions
 							.keys()
-							.find(({ RawAction }) => RawAction === action),
+							.find(
+								({ RawAction }) =>
+									RawAction === (action as never),
+							),
 					),
 				);
 			}

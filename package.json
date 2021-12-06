@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/gamejoy",
-	"version": "1.0.0-alpha.10",
+	"version": "1.0.0-alpha.11",
 	"description": "A simple class-based input library",
 	"main": "out/init.lua",
 	"types": "out/index.d.ts",
