@@ -65,7 +65,7 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 		});
 
 		connection.Ended(() => {
-			if (this.IsPressed && !cancelled) {
+			if (this.IsActive && !cancelled) {
 				this.SetTriggered(false);
 				// this.ActiveInputs.remove();
 			}

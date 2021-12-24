@@ -25,7 +25,7 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 		});
 
 		connection.Released(() => {
-			if (this.IsPressed) {
+			if (this.IsActive) {
 				this.SetTriggered(false);
 				this.Changed.Fire();
 			}

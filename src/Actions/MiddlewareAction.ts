@@ -36,7 +36,7 @@ export class MiddlewareAction<A extends RawActionEntry> extends BaseAction {
 		});
 
 		connection.Released(() => {
-			if (this.IsPressed) {
+			if (this.IsActive) {
 				this.Cancelled.Fire();
 				this.SetTriggered(false);
 			}

@@ -46,7 +46,7 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 				}
 			}
 
-			if (this.IsPressed) this.SetTriggered((this.canCancel = false));
+			if (this.IsActive) this.SetTriggered((this.canCancel = false));
 		});
 	}
 

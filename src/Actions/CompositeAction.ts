@@ -31,7 +31,7 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 				return this.SetTriggered(true);
 			}
 
-			if (this.IsPressed) this.SetTriggered(false);
+			if (this.IsActive) this.SetTriggered(false);
 		});
 	}
 
