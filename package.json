@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/gamejoy",
-	"version": "1.0.0-alpha.11",
+	"version": "1.0.0-alpha.12",
 	"description": "A simple class-based input library",
 	"main": "out/init.lua",
 	"types": "out/index.d.ts",
@@ -41,9 +41,9 @@
 		"@rbxts/compiler-types": "^1.2.7-types.1",
 		"@rbxts/testez": "^0.3.1-ts.7",
 		"@rbxts/types": "^1.0.556",
-		"@typescript-eslint/eslint-plugin": "^5.5.0",
-		"@typescript-eslint/parser": "^5.5.0",
-		"eslint": "^8.4.0",
+		"@typescript-eslint/eslint-plugin": "^5.8.0",
+		"@typescript-eslint/parser": "^5.8.0",
+		"eslint": "^8.5.0",
 		"eslint-config-prettier": "^8.3.0",
 		"eslint-plugin-prettier": "^4.0.0",
 		"eslint-plugin-roblox-ts": "^0.0.32",
@@ -56,6 +56,6 @@
 		"@rbxts/rust-classes": "^0.11.0-beta.1",
 		"@rbxts/services": "^1.2.0",
 		"@rbxts/signal": "^1.0.3",
-		"@rbxts/t": "^2.2.1"
+		"@rbxts/t": "^3.0.0"
 	}
 }
