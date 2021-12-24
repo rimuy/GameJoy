@@ -9,7 +9,7 @@ import {
 	Sync,
 	Union,
 } from "../Actions";
-import aliases from "../Util/aliases";
+import aliases from "../Misc/Aliases";
 
 export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Action<A>
@@ -25,6 +25,8 @@ export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 export type ActionLike<A extends RawActionEntry> = A | ActionEntry<A>;
 
 export type ActionLikeArray<A extends RawActionEntry> = Array<ActionLike<A> | ActionLikeArray<A>>;
+
+export type ActionListener = () => void | Promise<void>;
 
 export type ActionKey = ActionLike<RawActionEntry> | ActionLikeArray<RawActionEntry>;
 
@@ -151,7 +153,103 @@ export type UnusedKeys =
 	| Enum.KeyCode.World92
 	| Enum.KeyCode.World93
 	| Enum.KeyCode.World94
-	| Enum.KeyCode.World95;
+	| Enum.KeyCode.World95
+	| 160
+	| 161
+	| 162
+	| 163
+	| 164
+	| 165
+	| 166
+	| 167
+	| 168
+	| 169
+	| 170
+	| 171
+	| 172
+	| 173
+	| 174
+	| 175
+	| 176
+	| 177
+	| 178
+	| 179
+	| 180
+	| 181
+	| 182
+	| 183
+	| 184
+	| 185
+	| 186
+	| 187
+	| 188
+	| 189
+	| 190
+	| 191
+	| 192
+	| 193
+	| 194
+	| 195
+	| 196
+	| 197
+	| 198
+	| 199
+	| 200
+	| 201
+	| 202
+	| 203
+	| 204
+	| 205
+	| 206
+	| 207
+	| 208
+	| 209
+	| 210
+	| 211
+	| 212
+	| 213
+	| 214
+	| 215
+	| 216
+	| 217
+	| 218
+	| 219
+	| 220
+	| 221
+	| 222
+	| 223
+	| 224
+	| 225
+	| 226
+	| 227
+	| 228
+	| 229
+	| 230
+	| 231
+	| 232
+	| 233
+	| 234
+	| 235
+	| 236
+	| 237
+	| 238
+	| 239
+	| 240
+	| 241
+	| 242
+	| 243
+	| 244
+	| 245
+	| 246
+	| 247
+	| 248
+	| 249
+	| 250
+	| 251
+	| 252
+	| 253
+	| 254
+	| 255;
 
 export type AxisActionEntry = CastsToEnum<AxisActionLike>;
 
@@ -159,7 +257,11 @@ export type RawAction = Exclude<Enum.KeyCode | Enum.UserInputType, UnusedKeys>;
 
 export type RawActionEntry = CastsToEnum<RawAction> | AliasKey;
 
+/**
+ * test
+ */
 export interface ContextOptions {
+	readonly ActionGhosting?: number;
 	readonly OnBefore?: () => boolean;
 	readonly Process?: boolean;
 	readonly RunSynchronously?: boolean;

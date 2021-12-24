@@ -1,9 +1,9 @@
-import { AxisActionEntry, RawActionEntry } from "../Definitions/Types";
+import { AxisActionEntry } from "../Definitions/Types";
 
 import { Action } from "./Action";
 import { BaseAction } from "../Class/BaseAction";
 
-import { ActionConnection } from "../Util/ActionConnection";
+import { ActionConnection } from "../Class/ActionConnection";
 
 export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 	readonly Delta;
@@ -39,3 +39,6 @@ export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 		});
 	}
 }
+
+const actionMt = AxisAction as LuaMetatable<AxisAction<AxisActionEntry>>;
+actionMt.__tostring = (c) => `Axis(${c.GetContentString()[0]})`;

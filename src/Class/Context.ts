@@ -7,6 +7,7 @@ import {
 	ActionEntry,
 	ActionLike,
 	ActionLikeArray,
+	ActionListener,
 	ActionKey,
 	ContextOptions,
 	RawActionEntry,
@@ -14,8 +15,8 @@ import {
 
 import { Action, Union } from "../Actions";
 
-import { ActionConnection } from "../Util/ActionConnection";
-import { transformAction } from "../Util/transformAction";
+import { ActionConnection } from "./ActionConnection";
+import { TransformAction } from "../Misc/TransformAction";
 
 import * as t from "../Util/TypeChecks";
 
@@ -24,6 +25,7 @@ const { ok: Ok, err: Err } = Result;
 const RAW_ACTION_REMOVAL_ERROR = "An error ocurred while trying to remove a raw action.";
 
 const defaultOptions: Required<Omit<ContextOptions, "Process">> = {
+	ActionGhosting: 0,
 	OnBefore: () => true,
 	RunSynchronously: false,
 };
@@ -31,7 +33,7 @@ const defaultOptions: Required<Omit<ContextOptions, "Process">> = {
 export class Context<O extends ContextOptions> {
 	private queue;
 
-	private actions: HashMap<ActionEntry, () => void | Promise<void>>;
+	private actions: HashMap<ActionEntry, ActionListener>;
 
 	private rawActions: HashMap<ActionKey, ActionEntry>;
 
@@ -55,7 +57,7 @@ export class Context<O extends ContextOptions> {
 
 	private ConnectAction<A extends RawActionEntry>(action: ActionEntry<A>) {
 		const options = { ...defaultOptions, ...this.Options };
-		const { RunSynchronously, OnBefore } = options;
+		const { RunSynchronously, OnBefore, ActionGhosting } = options;
 
 		action.SetContext(this);
 		const connection = ActionConnection.From(action);
@@ -72,7 +74,7 @@ export class Context<O extends ContextOptions> {
 				) {
 					listener();
 				} else {
-					this.queue.Add(action, listener);
+					this.queue.Add(action, ActionGhosting, listener);
 				}
 			}
 		});
@@ -115,7 +117,7 @@ export class Context<O extends ContextOptions> {
 			actions.insert(action, listener);
 		} else {
 			this.rawActions.entry(action).orInsertWith(() => {
-				const actionEntry = transformAction<R>(action, Action, Union);
+				const actionEntry = TransformAction<R>(action, Action, Union);
 
 				this.ConnectAction<R>(actionEntry);
 

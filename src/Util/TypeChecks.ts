@@ -1,6 +1,6 @@
 import { t } from "@rbxts/t";
 
-import aliases from "./aliases";
+import aliases from "../Misc/Aliases";
 
 import {
 	Action,
@@ -62,20 +62,26 @@ const axisActionEntries = [
 	Enum.KeyCode.ButtonR2,
 ] as const;
 
+const mouseButtonActionEntries = [
+	Enum.UserInputType.MouseButton1,
+	Enum.UserInputType.MouseButton2,
+	Enum.UserInputType.MouseButton3,
+] as const;
+
 const classIsOfType = (value: unknown, classType: string) =>
 	type(value) === "table" && tostring(getmetatable(value as object)) === classType;
 
 export const isActionEqualTo = (
 	entry: AxisActionEntry | RawActionEntry | ActionEntry,
 	key: Enum.KeyCode,
-	input: Enum.UserInputType,
+	input?: Enum.UserInputType,
 ) =>
 	(typeIs(entry, "EnumItem") && key === entry) ||
 	(typeIs(entry, "string") && key.Name === entry) ||
 	(typeIs(entry, "number") && key.Value === entry) ||
 	(typeIs(entry, "EnumItem") && input === entry) ||
-	(typeIs(entry, "string") && input.Name === entry) ||
-	(typeIs(entry, "number") && input.Value === entry);
+	(typeIs(entry, "string") && input?.Name === entry) ||
+	(typeIs(entry, "number") && input?.Value === entry);
 
 export const isAction = <A extends RawActionEntry>(value: unknown): value is ActionEntry<A> =>
 	actions.some((actionType) => classIsOfType(value, actionType));
@@ -121,3 +127,16 @@ export const isAxisActionEntry = (value: unknown): value is AxisActionEntry =>
 			(typeIs(value, "string") && e.Name === value) ||
 			(typeIs(value, "number") && e.Value === value),
 	);
+
+export const isMouseButtonAction = (
+	value: RawActionEntry,
+): value is typeof mouseButtonActionEntries[number] =>
+	mouseButtonActionEntries.some(
+		(e) =>
+			(typeIs(value, "EnumItem") && e === value) ||
+			(typeIs(value, "string") && e.Name === value) ||
+			(typeIs(value, "number") && e.Value === value),
+	);
+
+export const isKeyCode = (value: unknown): value is Enum.KeyCode =>
+	Enum.KeyCode.GetEnumItems().some((e) => value === e);

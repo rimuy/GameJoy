@@ -1,9 +1,9 @@
-import { ActionConnection } from "../Util/ActionConnection";
+import { ActionConnection } from "../Class/ActionConnection";
 import { ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 
-import { transformAction } from "../Util/transformAction";
+import { TransformAction } from "../Misc/TransformAction";
 
 export class UnionAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: ActionLikeArray<A>) {
@@ -14,7 +14,7 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 		const thisConnection = ActionConnection.From(this);
 
 		for (const entry of this.RawAction) {
-			const action = transformAction<A>(entry, Action, UnionAction);
+			const action = TransformAction<A>(entry, Action, UnionAction);
 			const connection = ActionConnection.From(action);
 
 			action.SetContext(this.Context);
@@ -36,3 +36,6 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 		}
 	}
 }
+
+const actionMt = UnionAction as LuaMetatable<UnionAction<RawActionEntry>>;
+actionMt.__tostring = (c) => `Union(${c.GetContentString().join(", ")})`;

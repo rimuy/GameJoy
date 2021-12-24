@@ -1,9 +1,9 @@
 import type { Action, Union } from "../Actions";
-import { ActionEntry, ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 
-import * as t from "./TypeChecks";
+import * as t from "../Util/TypeChecks";
 
-export function transformAction<A extends RawActionEntry>(
+export function TransformAction<A extends RawActionEntry>(
 	entry: ActionLike<A> | ActionLikeArray<A>,
 	ActionClass: typeof Action,
 	ActionArrayClass: typeof Union,

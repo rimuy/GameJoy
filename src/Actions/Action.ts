@@ -1,7 +1,7 @@
 import Signal from "@rbxts/signal";
 
-import { ActionConnection } from "../Util/ActionConnection";
-import aliases from "../Util/aliases";
+import { ActionConnection } from "../Class/ActionConnection";
+import aliases from "../Misc/Aliases";
 
 import { BaseAction } from "../Class/BaseAction";
 
@@ -65,7 +65,10 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 		});
 
 		connection.Ended(() => {
-			if (this.IsPressed && !cancelled) this.SetTriggered(false);
+			if (this.IsPressed && !cancelled) {
+				this.SetTriggered(false);
+				// this.ActiveInputs.remove();
+			}
 			if (repeatTimes === 1) this.Released.Fire(false);
 
 			this.Changed.Fire();
@@ -74,3 +77,6 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 		connection.Destroyed(() => newInputSignal.Destroy());
 	}
 }
+
+const actionMt = Action as LuaMetatable<Action<RawActionEntry>>;
+actionMt.__tostring = (c) => `Action(${c.GetContentString()[0]})`;

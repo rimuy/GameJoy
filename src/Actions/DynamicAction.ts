@@ -1,19 +1,19 @@
 import Signal from "@rbxts/signal";
 
 import { ActionEntry, ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
-import { ActionConnection } from "../Util/ActionConnection";
+import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
 
-import { transformAction } from "../Util/transformAction";
+import { TransformAction } from "../Misc/TransformAction";
 import * as t from "../Util/TypeChecks";
 
 export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 	private CurrentConnection: ActionConnection | undefined;
 
 	private ConnectAction(newAction: ActionLike<A> | ActionLikeArray<A>) {
-		const action = transformAction<A>(newAction, Action, Union);
+		const action = TransformAction<A>(newAction, Action, Union);
 		const connection = ActionConnection.From(action);
 
 		(this.RawAction as unknown) = action.RawAction;
@@ -67,3 +67,6 @@ export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 		this.Updated.Fire();
 	}
 }
+
+const actionMt = DynamicAction as LuaMetatable<DynamicAction<RawActionEntry>>;
+actionMt.__tostring = (c) => `Dynamic(${c.GetContentString().join(", ")})`;

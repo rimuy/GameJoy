@@ -1,7 +1,7 @@
 /// <reference types="@rbxts/testez/globals" />
 
 import { Context, Actions } from "@rbxts/gamejoy";
-import { ActionConnection } from "@rbxts/gamejoy/out/Util/ActionConnection";
+import { ActionConnection } from "@rbxts/gamejoy/out/Class/ActionConnection";
 
 export = () => {
 	const { Action } = Actions;

@@ -4,8 +4,8 @@ import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
 import { BaseAction } from "../Class/BaseAction";
 
-import { ActionConnection } from "../Util/ActionConnection";
-import { transformAction } from "../Util/transformAction";
+import { ActionConnection } from "../Class/ActionConnection";
+import { TransformAction } from "../Misc/TransformAction";
 
 export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: ActionLike<A> | ActionLikeArray<A>) {
@@ -13,7 +13,7 @@ export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	protected OnConnected() {
-		const action = transformAction<A>(this.RawAction, Action, Union);
+		const action = TransformAction<A>(this.RawAction, Action, Union);
 		const connection = ActionConnection.From(action);
 
 		action.SetContext(this.Context);
@@ -31,3 +31,6 @@ export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
 		});
 	}
 }
+
+const actionMt = SynchronousAction as LuaMetatable<SynchronousAction<RawActionEntry>>;
+actionMt.__tostring = (c) => `Synchronous(${c.GetContentString().join(", ")})`;

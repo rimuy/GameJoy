@@ -1,6 +1,6 @@
 import { Union } from "../Actions";
 
-import aliases from "./aliases";
+import aliases from "../Misc/Aliases";
 
 type NumberEnums =
 	| Enum.KeyCode.Zero
@@ -33,7 +33,7 @@ const mappedKeypadEntries = {
 	[45]: Enum.KeyCode.KeypadMinus.Value,
 };
 
-export function withKeypadSupport<T extends KeypadEntry>(entry: T) {
+export function WithKeypad<T extends KeypadEntry>(entry: T) {
 	const value = typeIs(entry, "EnumItem")
 		? entry.Value
 		: typeIs(entry, "string")

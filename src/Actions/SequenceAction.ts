@@ -1,12 +1,12 @@
 import { Vec } from "@rbxts/rust-classes";
 
-import { ActionConnection } from "../Util/ActionConnection";
+import { ActionConnection } from "../Class/ActionConnection";
 import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 import { Action } from "./Action";
 import { UnionAction as Union } from "./UnionAction";
 
-import { transformAction } from "../Util/transformAction";
+import { TransformAction } from "../Misc/TransformAction";
 import * as t from "../Util/TypeChecks";
 
 export class SequenceAction<A extends RawActionEntry> extends BaseAction {
@@ -54,7 +54,7 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 		const { queue } = this;
 
 		for (const entry of this.RawAction) {
-			const action = transformAction<A>(entry, Action, Union);
+			const action = TransformAction<A>(entry, Action, Union);
 			const connection = ActionConnection.From(action);
 
 			action.SetContext(this.Context);
@@ -88,3 +88,6 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 		}
 	}
 }
+
+const actionMt = SequenceAction as LuaMetatable<SequenceAction<RawActionEntry>>;
+actionMt.__tostring = (c) => `Sequence(${c.GetContentString().join(", ")})`;

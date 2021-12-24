@@ -76,11 +76,14 @@ const context = new Context();
 
 > `Context` can be instantiated with an object parameter, used for configuration.
 
+#### ActionGhosting
+Limits the amount of actions that can trigger if those have any raw action in common. If set to **0**, this property will be ignored.
+
 #### OnBefore
 Applies a check on every completed action. If the check fails, the action won't be triggered.
 
 #### Process
-Specifies that the action should be triggered if `gameProcessedEvent` matches the setting. If nothing is passed, the action will trigger independently.
+Specifies that the action should trigger if `gameProcessedEvent` matches the setting. If nothing is passed, the action will trigger independently.
 
 #### RunSynchronously
 Specifies if the actions are going to run synchronously or not.

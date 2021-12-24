@@ -51,4 +51,6 @@ export = new ReadonlyMap([
 	["R2", "ButtonR2"],
 	["L3", "ButtonL3"],
 	["R3", "ButtonR3"],
+	["LeftCtrl", "LeftControl"],
+	["RightCtrl", "RightControl"],
 ] as const);

@@ -4,7 +4,7 @@ import { Bin } from "@rbxts/bin";
 
 import { ActionEntry, RawActionEntry } from "../Definitions/Types";
 
-import * as t from "./TypeChecks";
+import * as t from "../Util/TypeChecks";
 
 function checkInputs(
 	action: ActionEntry,

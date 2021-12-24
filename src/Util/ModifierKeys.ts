@@ -1,4 +1,4 @@
-import { RawActionEntry } from "..";
+import { RawActionEntry } from "../Definitions/Types";
 import { Union } from "../Actions";
 
 // type ModifierEnum =
@@ -23,6 +23,6 @@ const unions: Record<ModiferKey, [RawActionEntry, RawActionEntry]> = {
 	Super: [Enum.KeyCode.LeftSuper, Enum.KeyCode.RightSuper],
 };
 
-export function withModifierKeys<M extends ModiferKey>(key: M) {
+export function ModifierKeys<M extends ModiferKey>(key: M) {
 	return new Union(unions[key]);
 }

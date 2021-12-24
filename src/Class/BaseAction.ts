@@ -1,10 +1,26 @@
+import { UserInputService as IS } from "@rbxts/services";
 import Signal from "@rbxts/signal";
 
-import { ContextOptions } from "../Definitions/Types";
+import {
+	ActionLike,
+	ActionLikeArray,
+	ContextOptions,
+	RawAction,
+	RawActionEntry,
+} from "../Definitions/Types";
+
 import { Context } from "./Context";
 
+import * as t from "../Util/TypeChecks";
+import { TranslateRawAction } from "../Util/TranslateRawAction";
+import { IsInputDown } from "../Util/IsInputDown";
+
 export abstract class BaseAction {
-	readonly IsPressed: boolean = false;
+	readonly Content: ReadonlyArray<RawAction> = new Array<RawAction>();
+
+	readonly RawAction!: ActionLike<RawActionEntry> | ActionLikeArray<RawActionEntry>;
+
+	readonly IsActive: boolean = false;
 
 	readonly Resolved = new Signal();
 
@@ -29,12 +45,33 @@ export abstract class BaseAction {
 	readonly Context: Context<ContextOptions> | undefined;
 
 	constructor() {
-		this.Connected.Connect(() => this.OnConnected());
+		const content = this.Content as Array<RawAction>;
+
+		const visit = (
+			action:
+				| RawActionEntry
+				| ActionLike<RawActionEntry>
+				| ActionLikeArray<RawActionEntry>,
+		) => {
+			if (t.isAction(action)) {
+				visit(action.RawAction);
+			} else if (t.isRawAction(action)) {
+				content.push(TranslateRawAction(action));
+			} else if (t.isActionLikeArray(action)) {
+				action.forEach((RawActionEntry) => visit(RawActionEntry));
+			}
+		};
+
 		this.Destroyed.Connect(() => this.SetContext(undefined));
+		this.Connected.Connect(() => {
+			this.OnConnected();
+			content.clear();
+			visit(this.RawAction);
+		});
 	}
 
 	protected SetTriggered(value: boolean, ignoreEventCall?: boolean) {
-		(this.IsPressed as boolean) = value;
+		(this.IsActive as boolean) = value;
 
 		if (!ignoreEventCall) {
 			this[value === true ? "Triggered" : "Released"].Fire(
@@ -49,6 +86,17 @@ export abstract class BaseAction {
 	SetContext<O extends ContextOptions>(context: Context<O> | undefined) {
 		(this.Context as unknown) = context;
 		this.Connected.Fire();
+	}
+
+	GetActiveInputs() {
+		return this.Content.filter((input) => IsInputDown(input));
+	}
+
+	GetContentString() {
+		return this.Content.map((x) => {
+			const code = IS.GetStringForKeyCode(x as Enum.KeyCode);
+			return t.isKeyCode(x) && code.size() > 0 ? code : x.Name;
+		}) as ReadonlyArray<RawAction["Name"]>;
 	}
 
 	Destroy() {
