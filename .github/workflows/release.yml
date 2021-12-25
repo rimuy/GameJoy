@@ -4,80 +4,80 @@ on: [workflow_dispatch]
 
 jobs:
 	gh-build:
-	name: Github Build
-	runs-on: ubuntu-latest
-	steps:
-		- name: Checkout
-			uses: actions/checkout@v2
+		name: Github Build
+		runs-on: ubuntu-latest
+		steps:
+			- name: Checkout
+				uses: actions/checkout@v2
 
-		- name: Install NPM dependencies
-			uses: bahmutov/npm-install@v1.7.10
+			- name: Install NPM dependencies
+				uses: bahmutov/npm-install@v1.7.10
 
-		- name: Compile
-			run: npm run build:model
+			- name: Compile
+				run: npm run build:model
 
-		- name: Install Foreman
-			uses: rojo-rbx/setup-foreman@v1
-			with:
-				token: ${{ secrets.GITHUB_TOKEN }}
-
-		- name: Install Foreman Packages
-			run: foreman install
-
-		- name: Build
-			run: rojo build -o ./gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx ./model.project.json
-
-		- name: Create release
-				uses: actions/create-release@latest
-				id: create_release
+			- name: Install Foreman
+				uses: rojo-rbx/setup-foreman@v1
 				with:
-				draft: false
-				prerelease: false
-				release_name: ${{ steps.package-version.outputs.current-version }}
-				tag_name: ${{ steps.package-version.outputs.current-version }}
-				body_path: CHANGELOG.md
+					token: ${{ secrets.GITHUB_TOKEN }}
+
+			- name: Install Foreman Packages
+				run: foreman install
+
+			- name: Build
+				run: rojo build -o ./gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx ./model.project.json
+
+			- name: Create release
+					uses: actions/create-release@latest
+					id: create_release
+					with:
+					draft: false
+					prerelease: false
+					release_name: ${{ steps.package-version.outputs.current-version }}
+					tag_name: ${{ steps.package-version.outputs.current-version }}
+					body_path: CHANGELOG.md
+					env:
+					GITHUB_TOKEN: ${{ github.token }}
+
+			- name: Upload rbxmx file to release
+				uses: actions/upload-release-asset@v1
 				env:
-				GITHUB_TOKEN: ${{ github.token }}
-
-		- name: Upload rbxmx file to release
-			uses: actions/upload-release-asset@v1
-			env:
-				GITHUB_TOKEN: ${{ github.token }}
-				with:
-					upload_url: ${{ steps.create_release.outputs.upload_url }}
-					asset_path: ./gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx
-					asset_name: gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx
-					asset_content_type: form
+					GITHUB_TOKEN: ${{ github.token }}
+					with:
+						upload_url: ${{ steps.create_release.outputs.upload_url }}
+						asset_path: ./gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx
+						asset_name: gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx
+						asset_content_type: form
 	wally-build:
-	name: Wally Build
-	runs-on: ubuntu-latest
-	steps:
-		- name: Checkout
-			uses: actions/checkout@v2
+		name: Wally Build
+		runs-on: ubuntu-latest
+		steps:
+			- name: Checkout
+				uses: actions/checkout@v2
 
-		- name: Install Foreman
-			uses: rojo-rbx/setup-foreman@v1
-			with:
-				token: ${{ secrets.GITHUB_TOKEN }}
+			- name: Install Foreman
+				uses: rojo-rbx/setup-foreman@v1
+				with:
+					token: ${{ secrets.GITHUB_TOKEN }}
 
-		- name: Install Wally
-			run: foreman install
+			- name: Install Wally
+				run: foreman install
 
-		- name: Prepare wally package contents
-			run: |
-				mkdir -p ~/temp/gamejoy
-				cp -r ./{include,out} ~/temp/gamejoy/
-				cp ./{CHANGELOG.md,LICENSE,README.md,wally.lock,wally.toml} ~/temp/gamejoy/
-				cp ./standalone-model.project.json ~/temp/gamejoy/default.project.json
-				mkdir ~/temp/gamejoy/node_modules
-				cp -r ./node_modules/@rbxts ~/temp/gamejoy/node_modules/
+			- name: Prepare wally package contents
+				run: |
+					mkdir -p ~/temp/gamejoy
+					cp -r ./{include,out} ~/temp/gamejoy/
+					cp ./{CHANGELOG.md,LICENSE,README.md,wally.lock,wally.toml} ~/temp/gamejoy/
+					cp ./standalone-model.project.json ~/temp/gamejoy/default.project.json
+					mkdir ~/temp/gamejoy/node_modules
+					cp -r ./node_modules/@rbxts ~/temp/gamejoy/node_modules/
 
-		- name: Prepare Wally Auth
-			run: |
-				mkdir ~/.wally
-				echo -e '${{ secrets.WALLY_AUTH }}' > ~/.wally/auth.toml
+			- name: Prepare Wally Auth
+				run: |
+					mkdir ~/.wally
+					echo -e '${{ secrets.WALLY_AUTH }}' > ~/.wally/auth.toml
 
-		- name: Publish Wally Package
-			run: |
-				wally publish --project-path -v ~/temp/gamejoy/
-				echo "All done!"
+			- name: Publish Wally Package
+				run: |
+					wally publish --project-path -v ~/temp/gamejoy/
+					echo "All done!"
