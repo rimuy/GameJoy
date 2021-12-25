@@ -55,7 +55,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-			- name: Install NPM dependencies
+      - name: Install NPM dependencies
         uses: bahmutov/npm-install@v1.7.10
 
       - name: Compile
