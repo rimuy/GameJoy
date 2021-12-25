@@ -13,6 +13,10 @@ jobs:
       - name: Install NPM dependencies
         uses: bahmutov/npm-install@v1.7.10
 
+			- name: Get NPM Version
+				id: package-version
+				uses: martinbeentjes/npm-get-version-action@master
+
       - name: Compile
         run: npm run build:model
 
@@ -31,10 +35,10 @@ jobs:
         uses: actions/create-release@latest
         id: create_release
         with:
-            draft: false
-            prerelease: false
             release_name: ${{ steps.package-version.outputs.current-version }}
             tag_name: ${{ steps.package-version.outputs.current-version }}
+            draft: false
+            prerelease: false
             body_path: CHANGELOG.md
         env:
             GITHUB_TOKEN: ${{ github.token }}
