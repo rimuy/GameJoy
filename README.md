@@ -38,7 +38,15 @@ npm i @rbxts/gamejoy
 ```
 
 ### Wally
-> TODO
+For [wally](https://wally.run/) users, the package can be installed by adding the following line under the `[dependencies]` section into their `wally.toml`.
+```bash
+GameJoy = "rimuy/gamejoy@1.0.0"
+```
+
+After that, just run `wally install`.
+
+### From model file
+Model files are uploaded to every release as `.rbxmx` files. You can download the file from the [Releases page](https://github.com/HylianBasement/GameJoy/releases) and load it into your project however you see fit.
 
 ## Table of Contents
 
