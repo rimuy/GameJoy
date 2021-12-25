@@ -33,6 +33,9 @@ const mappedKeypadEntries = {
 	[45]: Enum.KeyCode.KeypadMinus.Value,
 };
 
+/**
+ * Returns an union containing a number key and its numpad equivalent.
+ */
 export function WithKeypad<T extends KeypadEntry>(entry: T) {
 	const value = typeIs(entry, "EnumItem")
 		? entry.Value

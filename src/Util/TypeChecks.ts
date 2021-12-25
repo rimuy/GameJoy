@@ -71,6 +71,9 @@ const mouseButtonActionEntries = [
 const classIsOfType = (value: unknown, classType: string) =>
 	type(value) === "table" && tostring(getmetatable(value as object)) === classType;
 
+/**
+ * Checks if the action entry matches a KeyCode and/or UserInputType member.
+ */
 export const isActionEqualTo = (
 	entry: AxisActionEntry | RawActionEntry | ActionEntry,
 	key: Enum.KeyCode,
@@ -83,9 +86,15 @@ export const isActionEqualTo = (
 	(typeIs(entry, "string") && input?.Name === entry) ||
 	(typeIs(entry, "number") && input?.Value === entry);
 
+/**
+ * Checks if the value is an action object.
+ */
 export const isAction = <A extends RawActionEntry>(value: unknown): value is ActionEntry<A> =>
 	actions.some((actionType) => classIsOfType(value, actionType));
 
+/**
+ * Checks if the value is an array of action objects.
+ */
 export const isActionArray = t.array(isAction);
 
 export const EnumAlias =
@@ -100,6 +109,9 @@ export const EnumAlias =
 					aliases.get(value as AliasKey) === item.Name,
 			);
 
+/**
+ * Checks if the value is a raw action.
+ */
 export const isRawAction = t.union(
 	EnumAlias(Enum.KeyCode),
 	EnumAlias(Enum.UserInputType),
@@ -107,19 +119,37 @@ export const isRawAction = t.union(
 	t.enum(Enum.UserInputType),
 );
 
+/**
+ * Checks if the value is an array of raw actions.
+ */
 export const isRawActionArray = t.array(isRawAction);
 
+/**
+ * Checks if the value is action-like.
+ */
 export const isActionLike = t.union(isAction, isRawAction, isRawActionArray);
 
+/**
+ * Checks if the value is an array of action-like values.
+ */
 export const isActionLikeArray = t.array(isActionLike);
 
+/**
+ * Checks if the value is a valid action entry.
+ */
 export const isValidActionEntry = t.union(isActionLike, isActionLikeArray);
 
+/**
+ * Checks if an action object matches a specified variant.
+ */
 export const actionEntryIs = <A extends RawActionEntry, E extends keyof ActionTypes<A>>(
 	value: unknown,
 	actionType: E,
 ): value is ActionTypes<A>[E] => classIsOfType(value, actionType);
 
+/**
+ * Checks if the value is an axis action entry.
+ */
 export const isAxisActionEntry = (value: unknown): value is AxisActionEntry =>
 	axisActionEntries.some(
 		(e) =>
@@ -128,6 +158,9 @@ export const isAxisActionEntry = (value: unknown): value is AxisActionEntry =>
 			(typeIs(value, "number") && e.Value === value),
 	);
 
+/**
+ * Checks if the value is a valid MouseButton entry.
+ */
 export const isMouseButtonAction = (
 	value: RawActionEntry,
 ): value is typeof mouseButtonActionEntries[number] =>
@@ -138,5 +171,8 @@ export const isMouseButtonAction = (
 			(typeIs(value, "number") && e.Value === value),
 	);
 
+/**
+ * Checks if the value is a valid KeyCode entry.
+ */
 export const isKeyCode = (value: unknown): value is Enum.KeyCode =>
 	Enum.KeyCode.GetEnumItems().some((e) => value === e);

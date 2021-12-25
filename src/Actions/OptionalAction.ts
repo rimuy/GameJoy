@@ -6,6 +6,10 @@ import { UnionAction as Union } from "./UnionAction";
 
 import { TransformAction } from "../Misc/TransformAction";
 
+/**
+ * Variant that is used to act as a "ghost" action when placed inside objects that accepts multiple entries.
+ * Its parent action can trigger without the need of the action being active, and will trigger again once the action activates.
+ */
 export class OptionalAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: ActionLike<A> | ActionLikeArray<A>) {
 		super();

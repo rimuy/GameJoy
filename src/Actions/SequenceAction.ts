@@ -9,6 +9,9 @@ import { UnionAction as Union } from "./UnionAction";
 import { TransformAction } from "../Misc/TransformAction";
 import * as t from "../Util/TypeChecks";
 
+/**
+ * Variant that requires all of its entries to be active in a specific order for it to trigger.
+ */
 export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 	private queue: Vec<ActionLike<A> | ActionLikeArray<A>>;
 

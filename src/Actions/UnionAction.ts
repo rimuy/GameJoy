@@ -5,6 +5,9 @@ import { Action } from "./Action";
 
 import { TransformAction } from "../Misc/TransformAction";
 
+/**
+ * Variant that accepts multiple entries as a parameter.
+ */
 export class UnionAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();

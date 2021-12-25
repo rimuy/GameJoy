@@ -12,6 +12,9 @@ interface ActionOptions {
 	Timing?: number;
 }
 
+/**
+ * Object that holds information about inputs that can be performed by the player while in a context.
+ */
 export class Action<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: A, private options: ActionOptions = {}) {
 		super();
@@ -67,7 +70,6 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 		connection.Ended(() => {
 			if (this.IsActive && !cancelled) {
 				this.SetTriggered(false);
-				// this.ActiveInputs.remove();
 			}
 			if (repeatTimes === 1) this.Released.Fire(false);
 

@@ -5,6 +5,10 @@ import { BaseAction } from "../Class/BaseAction";
 
 import { ActionConnection } from "../Class/ActionConnection";
 
+/**
+ * Variant that provides support for inputs that have a continuous range.
+ * The action is triggered everytime the input is changed.
+ */
 export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 	readonly Delta;
 

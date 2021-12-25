@@ -7,6 +7,10 @@ import { BaseAction } from "../Class/BaseAction";
 import { ActionConnection } from "../Class/ActionConnection";
 import { TransformAction } from "../Misc/TransformAction";
 
+/**
+ * Variant that synchronizes its action when placed on the highest hierarchy.
+ * Useful when the `RunSynchronously` option is disabled but you want a specific action to be executed synchronously.
+ */
 export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
 	constructor(public readonly RawAction: ActionLike<A> | ActionLikeArray<A>) {
 		super();

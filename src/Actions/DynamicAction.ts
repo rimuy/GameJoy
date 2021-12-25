@@ -9,6 +9,11 @@ import { UnionAction as Union } from "./UnionAction";
 import { TransformAction } from "../Misc/TransformAction";
 import * as t from "../Util/TypeChecks";
 
+/**
+ * Variant that accepts any action as a parameter and can be updated.
+ *
+ * It has an `Update` method and a `.Updated` signal that fires whenever it's updated.
+ */
 export class DynamicAction<A extends RawActionEntry> extends BaseAction {
 	private CurrentConnection: ActionConnection | undefined;
 

@@ -13,6 +13,9 @@ function isOptional<A extends RawActionEntry>(action: ActionEntry<A>) {
 	return t.actionEntryIs(action, "OptionalAction");
 }
 
+/**
+ * Variant that requires all of its entries to be active for it to trigger.
+ */
 export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 	private status: HashMap<ActionEntry<A>, boolean>;
 

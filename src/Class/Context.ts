@@ -30,6 +30,9 @@ const defaultOptions: Required<Omit<ContextOptions, "Process">> = {
 	RunSynchronously: false,
 };
 
+/**
+ * Object responsible for storing and managing bound actions.
+ */
 export class Context<O extends ContextOptions> {
 	private queue;
 
@@ -101,10 +104,16 @@ export class Context<O extends ContextOptions> {
 		return Err(RAW_ACTION_REMOVAL_ERROR);
 	}
 
+	/**
+	 * Checks if a certain action is bound to the context.
+	 */
 	Has(action: ActionEntry) {
 		return this.actions.containsKey(action);
 	}
 
+	/**
+	 * Registers an action into the context.
+	 */
 	Bind<R extends RawActionEntry, A extends ActionLike<R>>(
 		action: A | ActionLikeArray<R>,
 		listener: () => void | Promise<void>,
@@ -129,6 +138,9 @@ export class Context<O extends ContextOptions> {
 		return this;
 	}
 
+	/**
+	 * Removes an action from the context.
+	 */
 	Unbind<R extends RawActionEntry, A extends ActionLike<R>>(action: A | ActionLikeArray<R>) {
 		const { rawActions } = this;
 
@@ -158,6 +170,9 @@ export class Context<O extends ContextOptions> {
 		return this;
 	}
 
+	/**
+	 * Removes all bound actions from the context.
+	 */
 	UnbindAll() {
 		this.actions.iter().forEach(([action]) => action.Destroy());
 		this.rawActions.values().forEach((action) => action.Destroy());

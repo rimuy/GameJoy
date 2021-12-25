@@ -7,6 +7,9 @@ import { BaseAction } from "../Class/BaseAction";
 import { ActionConnection } from "../Class/ActionConnection";
 import { TransformAction } from "../Misc/TransformAction";
 
+/**
+ * Variant that accepts a callback that can be used to set a condition to your action.
+ */
 export class MiddlewareAction<A extends RawActionEntry> extends BaseAction {
 	constructor(
 		public readonly RawAction: ActionLike<A> | ActionLikeArray<A>,

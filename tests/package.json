@@ -13,7 +13,7 @@
     "@rbxts/types": "^1.0.550"
   },
   "dependencies": {
-    "@rbxts/gamejoy": "^1.0.0-beta.0",
+    "@rbxts/gamejoy": "^1.0.0-beta.1",
     "@rbxts/services": "^1.2.0",
     "@rbxts/testez": "^0.3.1-ts.7"
   }
