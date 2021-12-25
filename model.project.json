@@ -9,7 +9,7 @@
                 "include": {
                         "$path": "include",
                         "node_modules": {
-                        "$path": "node_modules/@rbxts"
+                                "$path": "node_modules/@rbxts"
                         }
                 }
         }

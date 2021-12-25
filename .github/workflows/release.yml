@@ -27,7 +27,7 @@ jobs:
       - name: Build
         run: rojo build -o ./gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx ./model.project.json
 
-      - name: Create release
+      - name: Create Release
         uses: actions/create-release@latest
         id: create_release
         with:
@@ -55,6 +55,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+			- name: Install NPM dependencies
+        uses: bahmutov/npm-install@v1.7.10
+
+      - name: Compile
+        run: npm run build:model
+
       - name: Install Foreman
         uses: rojo-rbx/setup-foreman@v1
         with:
@@ -63,12 +69,12 @@ jobs:
       - name: Install Wally
         run: foreman install
 
-      - name: Prepare wally package contents
+      - name: Prepare Wally Package Contents
         run: |
           mkdir -p ~/temp/gamejoy
           cp -r ./{include,out} ~/temp/gamejoy/
           cp ./{CHANGELOG.md,LICENSE,README.md,wally.lock,wally.toml} ~/temp/gamejoy/
-          cp ./standalone-model.project.json ~/temp/gamejoy/default.project.json
+          cp ./model.project.json ~/temp/gamejoy/default.project.json
           mkdir ~/temp/gamejoy/node_modules
           cp -r ./node_modules/@rbxts ~/temp/gamejoy/node_modules/
 
