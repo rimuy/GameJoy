@@ -76,11 +76,7 @@ jobs:
       - name: Prepare Wally Package Contents
         run: |
           mkdir -p ~/temp/gamejoy
-          cp -r ./{include,out} ~/temp/gamejoy/
-          cp ./{CHANGELOG.md,LICENSE,README.md,wally.lock,wally.toml} ~/temp/gamejoy/
-          cp ./model.project.json ~/temp/gamejoy/default.project.json
-          mkdir ~/temp/gamejoy/node_modules
-          cp -r ./node_modules/@rbxts ~/temp/gamejoy/node_modules/
+          cp -r ./* ~/temp/gamejoy/
 
       - name: Prepare Wally Auth
         run: |
