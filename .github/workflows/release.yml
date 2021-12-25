@@ -89,5 +89,5 @@ jobs:
 
       - name: Publish Wally Package
         run: |
-          wally publish --project-path -v ~/temp/gamejoy/
+          wally publish --project-path ~/temp/gamejoy/ -v
           echo "All done!"
