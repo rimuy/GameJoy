@@ -78,10 +78,9 @@ jobs:
           mkdir -p ~/temp/gamejoy
           cp -r ./* ~/temp/gamejoy/
 
-      - name: Prepare Wally Auth
+      - name: Wally Login
         run: |
-          mkdir ~/.wally
-          echo -e '${{ secrets.WALLY_AUTH }}' > ~/.wally/auth.toml
+					wally login
 
       - name: Publish Wally Package
         run: |
