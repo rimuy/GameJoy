@@ -38,8 +38,9 @@ npm i @rbxts/gamejoy
 ```
 
 ### Wally
-For [wally](https://wally.run/) users, the package can be installed by adding the following line under the `[dependencies]` section into their `wally.toml`.
-```bash
+For [wally](https://wally.run/) users, the package can be installed by adding the following line into their `wally.toml`.
+```cs
+[dependencies]
 GameJoy = "rimuy/gamejoy@1.0.0"
 ```
 
