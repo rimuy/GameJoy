@@ -80,7 +80,7 @@ jobs:
 
       - name: Wally Login
         run: |
-					wally login
+          wally login
 
       - name: Publish Wally Package
         run: |
