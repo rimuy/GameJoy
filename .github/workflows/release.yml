@@ -29,7 +29,7 @@ jobs:
         run: foreman install
 
       - name: Build
-        run: rojo build -o ./gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx ./model.project.json
+        run: rojo build -o ./gamejoy-${{ steps.package-version.outputs.current-version }}.rbxmx
 
       - name: Create Release
         uses: actions/create-release@latest
