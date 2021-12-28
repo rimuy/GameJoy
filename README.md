@@ -1,33 +1,11 @@
-<div align="center">
-        <h1>GameJoy</h1>
-        <a href="https://github.com/HylianBasement/gamejoy/actions">
-                <img src="https://github.com/HylianBasement/gamejoy/workflows/CI/badge.svg" alt="CI Status" />
-        </a>
-        <a href="https://opensource.org/licenses/MIT">
-		<img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" />
-	</a>
-	<a href="https://www.npmjs.com/package/@rbxts/gamejoy">
-		<img src="https://badge.fury.io/js/%40rbxts%2Fgamejoy.svg" />
-	</a>
-        <br/>
-        A simple class-based input library made with roblox-ts
-</div>
+# GameJoy
+A simple class-based input library made with roblox-ts.
 
-<br/>
-<div align="center">
-        <pre>npm i <a href="https://www.npmjs.com/package/@rbxts/gamejoy">@rbxts/gamejoy</a></pre>
-</div>
-<br/>
+---
 
-```js
-import { Context } from "@rbxts/gamejoy";
-
-const context = new Context();
-
-context.Bind(["MouseButton1", "Q"], () => {
-        print("Hello world!");
-});
-```
+[![CI Status](https://github.com/HylianBasement/gamejoy/workflows/CI/badge.svg)](https://github.com/HylianBasement/gamejoy/actions)
+[![License MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Package](https://badge.fury.io/js/%40rbxts%2Fgamejoy.svg)](https://www.npmjs.com/package/@rbxts/gamejoy)
 
 ## Installation
 
