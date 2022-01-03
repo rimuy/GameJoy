@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/gamejoy",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"description": "A simple class-based input library",
 	"main": "out/init.lua",
 	"types": "out/index.d.ts",
@@ -16,6 +16,7 @@
 		"test:rojo": "rojo build tests -o ./tests/test.rbxlx",
 		"test:run": "run-in-roblox --place ./tests/test.rbxlx --script ./tests/out/testBootstrap.server.lua",
 		"test:update-package": "cd tests && npm i @rbxts/gamejoy@latest",
+		"publish:wally": "npm run build:model && wally publish",
 		"prepublishOnly": "npm run build",
 		"postpublish": "npm run test:update-package"
 	},

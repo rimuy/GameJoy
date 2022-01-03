@@ -7,7 +7,7 @@ import { ActionEntry, ActionListener } from "../Definitions/Types";
 interface QueueEntry {
 	Action: ActionEntry;
 	Bin: Bin;
-	Executable: () => Promise<void>;
+	Executable: () => Promise<Promise<void>>;
 	IsExecuting: boolean;
 }
 
@@ -95,8 +95,12 @@ export class ActionQueue {
 				const bin = new Bin();
 
 				const exe = () => {
-					const execute = Promise.try(() => {
-						chosenListener();
+					const execute = Promise.try(async () => {
+						const result = chosenListener();
+
+						if (Promise.is(result)) {
+							await result;
+						}
 
 						Queue.remove(0);
 						chosenAction.Resolved.Fire();
