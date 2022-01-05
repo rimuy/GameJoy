@@ -1,5 +1,9 @@
-# GameJoy
-A simple class-based input library made with roblox-ts.
+<div>
+        <img align="left" src="https://i.imgur.com/yO4KX2M.png" height="200" width="150">
+                <h1><code>GameJoy</code></h1>
+                <p>A simple class-based input library made with roblox-ts.</p>
+        </img>
+</div>
 
 ---
 
