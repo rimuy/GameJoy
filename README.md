@@ -10,79 +10,109 @@
 [![CI Status](https://github.com/HylianBasement/gamejoy/workflows/CI/badge.svg)](https://github.com/HylianBasement/gamejoy/actions)
 [![License MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Package](https://badge.fury.io/js/%40rbxts%2Fgamejoy.svg)](https://www.npmjs.com/package/@rbxts/gamejoy)
-
 <br/>
 <br/>
 
 ## Installation
-
 ### npm
 Simply execute the command below to install it to your [roblox-ts](https://roblox-ts.com/) project.
 ```bash
 npm i @rbxts/gamejoy
 ```
 
-<!--
 ### Wally
 For [wally](https://wally.run/) users, the package can be installed by adding the following line into their `wally.toml`.
 ```cs
 [dependencies]
-GameJoy = "rimuy/gamejoy@1.0.0"
+GameJoy = "rimuy/gamejoy@1.1.0"
 ```
 
 After that, just run `wally install`.
--->
 
 ### From model file
 Model files are uploaded to every release as `.rbxmx` files. You can download the file from the [Releases page](https://github.com/HylianBasement/GameJoy/releases) and load it into your project however you see fit.
 
-## Table of Contents
+## Features
+- ### Class-based
+    Because action bindings are actually classes, the user has the ability to check whether an action is active or not, and to use its respective methods and events for better manipulation. We want to choose what kind of action we want to use by destructuring `Actions`.
 
-- [Installation](#installation)
-  * [npm](#npm)
-  * [Wally](#wally)
-- [Context](#context)
-  * [OnBefore](#onbefore)
-  * [Process](#process)
-  * [RunSynchronously](#runsynchronously)
-- [Creating an Action](#creating-an-action)
-  * [Raw Actions](#raw-actions)
-  * [Filtering multiple inputs](#filtering-multiple-inputs)
-  * [Composing inputs into an action](#composing-inputs-into-an-action)
-  * [Using a specific order of inputs](#using-a-specific-order-of-inputs)
-  * [Making one of the inputs optional](#making-one-of-the-inputs-optional)
-  * [Updating an existing action](#updating-an-existing-action)
-  * [Using an Axis](#using-an-axis)
-  * [Creating a conditional action](#creating-a-conditional-action)
-  * [Whitelisting actions from async behaviour](#whitelisting-actions-from-async-behaviour)
-- [Removing actions](#removing-actions)
-- [License](#license)
+    These are all the action classes that are currently available:
 
-## Context
-To get started, you need to instantiate `Context`. A **context** contains all the actions that bound to it, and is responsible for making them successfully trigger. After that, you'll want to choose want kind of action we want to use by destructuring `Actions`.
+    ```js
+    import { Actions } from "@rbxts/gamejoy";
 
-For this example, we'll be using `Action`.
+    const { Action, Axis, Dynamic, Manual, Middleware, Optional, Sequence, Synchronous, Union, Unique } = Actions;
+    ```
+    - #### Aliases
+        To shorten some existing keycode names, the library provides a ton of aliases that can be used instead.
+        All aliases can be found [here](https://github.com/HylianBasement/GameJoy/blob/main/src/Misc/Aliases.ts).
+- ### Context oriented
+    In order for actions to trigger, they must have a context where they belong to. A **context** contains all the actions that bound to it, and is responsible for making them successfully trigger.
 
-```js
-import { Actions, Context } from "@rbxts/gamejoy";
+    ```js
+    import { Context } from "@rbxts/gamejoy";
 
-const { Action } = Actions;
-const context = new Context();
-```
+    const context = new Context({
+            /**
+             * Limits the amount of actions that can trigger if those have any raw action in common.
+             * If set to 0, this property will be ignored. (defaults to 0)
+             */
+            ActionGhosting: 1,
+            /**
+             * Applies a check on every completed action. 
+             * If the check fails, the action won't be triggered. (defaults to () => true)
+             */
+            OnBefore: () => !!Player.Character,
+            /**
+             * Specifies that the action should trigger if gameProcessedEvent matches the setting.
+             * If nothing is passed, the action will trigger independently. (defaults to nil)
+             */
+            Process: false,
+            /**
+             * Specifies if the actions are going to run synchronously or not.
+             * This will ignore the action queue and resolve the action instantly. (defaults to false)
+             */
+            RunSynchronously: false,
+    });
 
-> `Context` can be instantiated with an object parameter, used for configuration.
+    context.Bind(["MouseButton1", "ButtonX"], () => {
+            CharacterController.Attack();
+    });
+    ```
+    - #### Queued actions
+        GameJoy contains a built-in action queue that automatically removes a resolved action from the queue and then executes the next one that was triggered, if the same is still pending. Every action that is successfully triggered, is sent to that queue, which will have the following behavior:
 
-#### ActionGhosting
-Limits the amount of actions that can trigger if those have any raw action in common. If set to **0**, this property will be ignored.
+        **Situation 1:** You press `Q`, then `E`. Since `Q` was the first one to be triggered, it's gonna be instantly executed. `Q` lasts 3 seconds and `E` is supposed to be triggered after it ends. If the `E` key becomes up, it's gonna be removed from the queue.
 
-#### OnBefore
-Applies a check on every completed action. If the check fails, the action won't be triggered.
+        **Situation 2:** You press `Q`, `E` and then `R`. This follows the same pattern from situation 1. When you cancel `E`, `R` is gonna be the next action to be executed, since its position in the queue was right after `E`.
 
-#### Process
-Specifies that the action should trigger if `gameProcessedEvent` matches the setting. If nothing is passed, the action will trigger independently.
+        In both cases, everytime an action is added to the queue, it will try to execute whatever action is in its first position.
+        Once the action resolved or rejected, the process will start all over again, until the queue becomes empty.
 
-#### RunSynchronously
-Specifies if the actions are going to run synchronously or not.
+        > This behavior can be disabled by setting the context's `RunSynchronously` option to `true`.
+    - #### Event bindings
+        Actions are not the only way to register something into the context, it's possible to even use events there!
+        Events requires identifiers, so that it can be possible to unbind them when needed.
+
+        ```js
+        context.BindEvent("onCharacterDamaged", CharacterController.Damaged, (oldHealth, health) => {
+                const damage = oldHealth - health;
+                print(`You lost ${damage}HP!`);
+
+                task.wait(0.3); // The player must wait 0.3 seconds before being able to counter-attack.
+        });
+        ```
+
+        If you want an event connection that doesn't use the queue, but still want it to pass the context's `OnBefore` check,
+        and to be disconnected when using the context's unbinding methods, you should use `Context.BindSyncEvent`.
+
+        ```js
+        context.BindSyncEvent("onRender", RunService.RenderStepped, (delta) => {
+                print(delta);
+        });
+        ```
+- ### Utilitaries
+    There are some utilitary functions available, such as typechecks. Those are located in the `Util` namespace.
 
 ## Creating an Action
 An **action** is an object that holds information about inputs that can be performed by the player while in a context. This can vary from a single action, to multiple ones. Actions be nested! which means that actions that accept multiple entries can have actions that contain other actions, and so on.
@@ -90,13 +120,13 @@ An **action** is an object that holds information about inputs that can be perfo
 ```js
 const action = new Action("Q");
 
-context.Bind(action, () => {
-        print("Q was pressed!");
-});
-
-action.Released.Connect(() => {
-        print("Q was released!");
-});
+context
+        .Bind(action, () => {
+                print("Q was pressed!");
+        })
+        .BindEvent("onReleased", action.Released, () => {
+                print("Q was released!");
+        });
 ```
 
 `Action` also accepts an object as the second parameter, used for configuration. The amount of times a key needs to be pressed and the maximum time between each press can be set up.
@@ -109,13 +139,13 @@ const runAction = new Action("W", {
         Timing: 0.3,
 });
 
-context.Bind(runAction, () => {
-        isRunning = true;
-});
-
-runAction.Released.Connect(() => {
-        isRunning = false;
-});
+context
+        .Bind(runAction, () => {
+                isRunning = true;
+        })
+        .BindEvent("onRunningStopped", runAction.Released, () => {
+                isRunning = false;
+        });
 ```
 
 > Everytime an action is triggered, it'll fire the `Triggered` event.
@@ -137,14 +167,12 @@ Of course, you won't be able to use any event that you could use with an action 
 
 ### Filtering multiple inputs
 Sometimes don't you want two or more inputs to trigger the same action? Well, if so, `Union` is what you want!
-It accepts an array of action/raw-action entries as a parameter.
+It accepts an array of action-like entries as a parameter.
 
 In this example, you create an **union** of F and ButtonB. If one of these keys are pressed, the action will be triggered.
 
 ```js
-const union = new Union(["F", "ButtonB"]);
-
-context.Bind(union, () => {
+context.Bind(new Union(["F", "ButtonB"]), () => {
         print("You pressed either F or ButtonB!");
 });
 ```
@@ -159,22 +187,21 @@ context.Bind(["F", "ButtonB"], () => {
 
 > A single raw action gets transformed as `Action`, whereas an array of those gets transformed as `Union`.
 
+### Triggering an action at once in a collection
+With `Unique`, it's possible to have an `Union` that won't trigger if a child action is already active. Making it **unique**!
+
+```js
+context.Bind(new Unique(["C", "V"]), () => {
+        print("Either C or V... but one must be inactive for the another one to work.");
+});
+```
+
 ### Composing inputs into an action
 What about having to press multiple keys at the same time to trigger an action? Well, `Composite` is what you're looking for. In a **composite**, the action will only trigger if all of its children actions are completed.
 
 ```js
-const composite = new Composite(["J", "K", "L"]);
-
-context.Bind(composite, () => {
+context.Bind(new Composite(["J", "K", "L"]), () => {
         print("You pressed J, K and L!");
-});
-```
-
-`Composite` is cancellable. When one of the keys is released, it'll trigger the `Cancelled` event. If there is already an action being executed and the composite was already queued, it'll remove the composite from the queue, preventing it to be triggered. This doesn't apply if `RunSynchronously` is set to true.
-
-```js
-composite.Cancelled.Connect(() => {
-        print("Composite was cancelled.");
 });
 ```
 
@@ -187,10 +214,16 @@ context.Bind(new Sequence(["LeftAlt", "E"]), () => {
 });
 ```
 
-> Just like `Composite`, `Sequence` is also cancellable.
+`Sequence` is cancellable. When one of the keys is released, it'll trigger the `Cancelled` event. If there is already an action being executed and the composite was already queued, it'll remove the composite from the queue, preventing it to be triggered. This doesn't apply if `RunSynchronously` is set to true.
+
+```js
+context.BindEvent("onCancel", sequence.Cancelled, () => {
+        print("Composite was cancelled.");
+});
+```
 
 ### Making one of the inputs optional
-Actions that require all of its children entries to be completed, such as `Composite` and `Sequence`, can contain an **optional** action.
+Some variants that requires multiple entries (`Composite`, `Sequence` and `Unique`), can contain an **optional** action.
 
 ```js
 context
@@ -199,10 +232,15 @@ context
         })
         .Bind(new Sequence(["F", new Optional("G")]), () => {
                 // ...
+        })
+        .Bind(new Unique(["F", new Optional("G"), "H"]), () => {
+                // ...
         });
 ```
 
-In both cases, the action is gonna be triggered if `F` is pressed, and then triggered again if `G` is pressed while `F` is still being hold.
+In both `Composite` and `Sequence`, the action is gonna be triggered if `F` is pressed, and then triggered again if `G` is pressed while `F` is still being hold. The difference is that in `Sequence`, the optional action must be activated in the right order.
+
+In `Unique`, the optional action will be able to break its parent object rules, triggering `Unique` even if a child action is already active.
 
 It's common to store the optional action in a variable to get its information later, like knowing whether it's pressed or not.
 
@@ -210,14 +248,14 @@ It's common to store the optional action in a variable to get its information la
 const optional = new Optional("G");
 
 context.Bind(new Composite(["F", optional]), () => {
-        if (optional.IsPressed) {
-                // ...
+        if (optional.IsActive) {
+                print("Do a barrel roll!");
         }
 });
 ```
 
 ### Updating an existing action
-Thanks to `Dynamic`, updating actions is a very easy task. You can store any action/raw-action inside it to make it updatable. Since **dynamic** actions are limited to a type, you'll need to create a type to filter what input will be available for the action to update.
+Thanks to `Dynamic`, updating actions is a very easy task. You can store any action-like inside it to make it updatable. Since **dynamic** actions are limited to a type, you'll need to create a type to filter what input will be available for the action to update.
 
 ```ts
 type ActionThatChanges = "X" | "Y" | "Z";
@@ -280,18 +318,34 @@ context
 Sometimes you want to specify when an action can be triggered, but don't want to configure the context to do so, because that would apply the check for all the bound actions. `Middleware` accepts a callback that can be used to set a condition to your action.
 
 ```js
-context.Bind(new Middleware("M", () => os.time() % 2 === 0), () => {
-        print("Works sometimes...");
+const timeMiddleware = () => os.time() % 2 === 0;
+
+context.Bind(new Middleware("M", timeMiddleware), () => {
+        print("Works half of the time, haha...");
 });
 ```
 
 ### Whitelisting actions from async behaviour
-Just like the above, `Sync` also aims to apply a configuration trait to a specific action, this time replicating the `RunSynchronously` option.
+Just like the above, `Sync` also aims to apply a configuration trait to a specific action, this time replicating the `RunSynchronously` option, making a specific action able to trigger synchronously.
 
 ```js
-context.Bind(new Sync("C"), () => {
-        print("This was triggered synchronously!");
-});
+context
+        .Bind("A", () => task.wait(5))
+        .Bind("B", () => print("Needs to wait till A is done..."))
+        .Bind(new Sync("C"), () => {
+                print("Will be executed even if there is already a pending action!");
+        });
+```
+
+### Manually triggering an action
+`Manual` is an action-like alternative to a bound event. Contains a `Trigger` method with custom parameters that can be used in its listener.
+
+```ts
+const manual = new Manual<[string, number]>();
+
+context.Bind(manual, (name, age) => print(name, age));
+
+manual.Trigger("Kevin", 19);
 ```
 
 ## Removing actions
@@ -307,7 +361,7 @@ context
         .Bind(action2, /** ... */)
         .Bind(action3, /** ... */)
         .Unbind(action2) // Unbinds action2 from the context
-        .UnbindAll();    // Unbinds all of the remaining bound actions
+        .UnbindAllActions();    // Unbinds all of the remaining bound actions
 ```
 
 ## License

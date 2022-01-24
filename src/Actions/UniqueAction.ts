@@ -1,17 +1,18 @@
 import { HashMap } from "@rbxts/rust-classes";
 import type Signal from "@rbxts/signal";
 
+import { ActionEntry, ActionLikeArray, RawActionEntry, SignalWithParams } from "../Definitions/Types";
+
 import { ActionConnection } from "../Class/ActionConnection";
-import { ActionEntry, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
 
 import { transformAction } from "../Misc/TransformAction";
 import { isOptional } from "../Misc/IsOptional";
 
 /**
- * Variant that requires all of its entries to be active for it to trigger.
+ * Variant that requires **only one** of its entries to be active for it to trigger.
  */
-export class CompositeAction<A extends RawActionEntry> extends BaseAction {
+export class UniqueAction<A extends RawActionEntry> extends BaseAction {
 	private status: HashMap<ActionEntry<A>, boolean>;
 
 	public constructor(public readonly RawAction: ActionLikeArray<A>) {
@@ -21,15 +22,28 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 
 		for (const entry of this.RawAction) {
 			const action = transformAction<A>(entry);
-			status.insert(action, isOptional(action));
+			if (isOptional(action)) {
+				ActionConnection.From(action).Triggered(() =>
+					(this.Triggered as SignalWithParams).Fire(
+						this.Context!.Options.Process,
+					),
+				);
+			} else {
+				status.insert(action, false);
+			}
 		}
 
 		ActionConnection.From(this).Changed(() => {
-			if (status.values().all((isPressed) => isPressed)) {
+			const count = status
+				.values()
+				.filter((isPressed): isPressed is true => isPressed)
+				.count();
+
+			if (!this.IsActive && count === 1) {
 				return this.SetTriggered(true);
 			}
 
-			if (this.IsActive) this.SetTriggered(false);
+			if (this.IsActive && count === 0) this.SetTriggered(false);
 		});
 	}
 
@@ -48,7 +62,7 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 			});
 
 			connection.Released(() => {
-				if (!isOptional(action)) status.insert(action, false);
+				status.insert(action, false);
 
 				(this.Changed as Signal).Fire();
 			});
@@ -60,5 +74,5 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 	}
 }
 
-const actionMt = CompositeAction as LuaMetatable<CompositeAction<RawActionEntry>>;
-actionMt.__tostring = (c) => `Composite(${c.GetContentString().join(", ")})`;
+const actionMt = UniqueAction as LuaMetatable<UniqueAction<RawActionEntry>>;
+actionMt.__tostring = (c) => `Unique(${c.GetContentString().join(", ")})`;

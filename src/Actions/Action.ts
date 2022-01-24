@@ -1,23 +1,34 @@
 import Signal from "@rbxts/signal";
 
-import { ActionConnection } from "../Class/ActionConnection";
-import aliases from "../Misc/Aliases";
+import {
+	ActionOptions,
+	AliasKey,
+	RawActionEntry,
+	ConsumerSignal,
+	SignalWithParams,
+} from "../Definitions/Types";
 
+import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
 
-import { AliasKey, RawActionEntry } from "../Definitions/Types";
-
-interface ActionOptions {
-	Repeat?: number;
-	Timing?: number;
-}
+import aliases from "../Misc/Aliases";
 
 /**
  * Object that holds information about inputs that can be performed by the player while in a context.
  */
 export class Action<A extends RawActionEntry> extends BaseAction {
-	constructor(public readonly RawAction: A, private options: ActionOptions = {}) {
+	public readonly Began: ConsumerSignal<(processed: boolean) => void>;
+
+	public readonly Ended: ConsumerSignal<(processed: boolean) => void>;
+
+	public readonly Cancelled: ConsumerSignal;
+
+	public constructor(public readonly RawAction: A, private options: ActionOptions = {}) {
 		super();
+		this.Began = new Signal();
+		this.Ended = new Signal();
+		this.Cancelled = new Signal();
+
 		const alias = aliases.get(RawAction as AliasKey);
 
 		if (alias) {
@@ -26,10 +37,10 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 	}
 
 	protected OnConnected() {
-		const { Repeat, Timing } = this.options;
+		const { Repeat = 1, Timing = 0.3 } = this.options;
 
-		const repeatTimes = math.max(1, Repeat ?? 1);
-		const timing = math.max(0, Timing ?? 0);
+		const repeatTimes = math.max(1, Repeat);
+		const timing = math.max(0, Timing);
 		const connection = ActionConnection.From(this);
 		const newInputSignal = new Signal();
 
@@ -41,7 +52,7 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 			timesTriggered++;
 
 			newInputSignal.Fire();
-			this.Changed.Fire();
+			(this.Changed as Signal).Fire();
 
 			new Promise<boolean>((resolve) => {
 				if (repeatTimes > 1) newInputSignal.Wait();
@@ -60,7 +71,7 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 					() => {
 						timesTriggered = 0;
 						if (cancelled) {
-							this.Cancelled.Fire();
+							(this.Cancelled as Signal).Fire();
 							this.SetTriggered(false);
 						}
 					},
@@ -71,9 +82,12 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 			if (this.IsActive && !cancelled) {
 				this.SetTriggered(false);
 			}
-			if (repeatTimes === 1) this.Released.Fire(false);
 
-			this.Changed.Fire();
+			if (repeatTimes === 1) {
+				(this.Released as unknown as SignalWithParams).Fire(false);
+			}
+
+			(this.Changed as Signal).Fire();
 		});
 
 		connection.Destroyed(() => newInputSignal.Destroy());
@@ -81,4 +95,4 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 }
 
 const actionMt = Action as LuaMetatable<Action<RawActionEntry>>;
-actionMt.__tostring = (c) => `Action(${c.GetContentString()[0]})`;
+actionMt.__tostring = (c) => `Action(${c.GetContentString()[0] ?? ""})`;

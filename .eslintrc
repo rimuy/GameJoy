@@ -30,10 +30,47 @@
 				"useTabs": true
 			}
 		],
-		"@typescript-eslint/no-misused-promises": "error",
-		"@typescript-eslint/no-unused-expressions": "warn",
-		"roblox-ts/no-namespace-merging": "off",
 		"prefer-const": "warn",
-		"curly": ["warn", "multi-line", "consistent"]
+		"curly": ["warn", "multi-line", "consistent"],
+		"no-return-await": "off",
+		"@typescript-eslint/return-await": "error",
+		"@typescript-eslint/no-unused-expressions": "warn",
+		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/no-for-in-array": "error",
+		"@typescript-eslint/no-this-alias": "error",
+		"@typescript-eslint/naming-convention": [
+			"error",
+			{
+				"selector": "function",
+				"format": ["strictCamelCase", "PascalCase"]
+			},
+			{
+				"selector": "variable",
+				"format": ["strictCamelCase", "UPPER_CASE", "PascalCase"]
+			},
+			{
+				"selector": "typeParameter",
+				"format": ["PascalCase"]
+			},
+			{
+				"selector": "parameter",
+				"format": ["camelCase"],
+				"leadingUnderscore": "allow"
+			},
+			{
+				"selector": "interface",
+				"format": ["StrictPascalCase"]
+			},
+			{
+				"selector": "classMethod",
+				"modifiers": ["private"],
+				"format": ["PascalCase"]
+			},
+			{
+				"selector": ["variable", "parameter", "memberLike"],
+				"modifiers": ["destructured"],
+				"format": null
+			}
+		]
 	}
 }

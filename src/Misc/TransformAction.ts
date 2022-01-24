@@ -1,12 +1,22 @@
-import type { Action, Union } from "../Actions";
-import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+import type { Action as ActionT, Axis as AxisT, Union as UnionT } from "../Actions";
+
+import { ActionLike, ActionLikeArray, AxisActionEntry, RawActionEntry } from "../Definitions/Types";
 
 import * as t from "../Util/TypeChecks";
 
-export function TransformAction<A extends RawActionEntry>(
-	entry: ActionLike<A> | ActionLikeArray<A>,
-	ActionClass: typeof Action,
-	ActionArrayClass: typeof Union,
+import { lazyLoad } from "./Lazy";
+
+let Action: typeof ActionT;
+lazyLoad("Action", (action) => (Action = action));
+
+let Axis: typeof AxisT;
+lazyLoad("Axis", (action) => (Axis = action));
+
+let Union: typeof UnionT;
+lazyLoad("Union", (action) => (Union = action));
+
+export function transformAction<A extends RawActionEntry>(
+	entry: AxisActionEntry | ActionLike<A> | ActionLikeArray<A>,
 ) {
 	if (!t.isValidActionEntry(entry)) {
 		error(debug.traceback("Invalid action entry."));
@@ -15,6 +25,8 @@ export function TransformAction<A extends RawActionEntry>(
 	return t.isAction(entry)
 		? entry
 		: t.isActionLikeArray(entry)
-		? new ActionArrayClass<A>(entry as never)
-		: new ActionClass<A>(entry);
+		? new Union<A>(entry as never)
+		: t.isAxisActionEntry(entry)
+		? new Axis(entry)
+		: new Action<A>(entry);
 }

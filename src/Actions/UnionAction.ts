@@ -1,15 +1,17 @@
-import { ActionConnection } from "../Class/ActionConnection";
-import { ActionLikeArray, RawActionEntry } from "../Definitions/Types";
-import { BaseAction } from "../Class/BaseAction";
-import { Action } from "./Action";
+import type Signal from "@rbxts/signal";
 
-import { TransformAction } from "../Misc/TransformAction";
+import { ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+
+import { ActionConnection } from "../Class/ActionConnection";
+import { BaseAction } from "../Class/BaseAction";
+
+import { transformAction } from "../Misc/TransformAction";
 
 /**
  * Variant that accepts multiple entries as a parameter.
  */
 export class UnionAction<A extends RawActionEntry> extends BaseAction {
-	constructor(public readonly RawAction: ActionLikeArray<A>) {
+	public constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
 	}
 
@@ -17,24 +19,24 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 		const thisConnection = ActionConnection.From(this);
 
 		for (const entry of this.RawAction) {
-			const action = TransformAction<A>(entry, Action, UnionAction);
+			const action = transformAction<A>(entry);
 			const connection = ActionConnection.From(action);
 
 			action.SetContext(this.Context);
 
 			connection.Triggered(() => {
 				this.SetTriggered(true);
-				this.Changed.Fire();
+				(this.Changed as Signal).Fire();
 			});
 
 			connection.Released(() => {
 				this.SetTriggered(false);
-				this.Changed.Fire();
+				(this.Changed as Signal).Fire();
 			});
 
 			thisConnection.Destroyed(() => {
 				action.Destroy();
-				this.Changed.Fire();
+				(this.Changed as Signal).Fire();
 			});
 		}
 	}

@@ -1,3 +1,5 @@
+import type Signal from "@rbxts/signal";
+
 import { AxisActionEntry } from "../Definitions/Types";
 
 import { Action } from "./Action";
@@ -10,13 +12,13 @@ import { ActionConnection } from "../Class/ActionConnection";
  * The action is triggered everytime the input is changed.
  */
 export class AxisAction<A extends AxisActionEntry> extends BaseAction {
-	readonly Delta;
+	public readonly Delta;
 
-	readonly Position;
+	public readonly Position;
 
-	readonly KeyCode: Enum.KeyCode;
+	public readonly KeyCode: Enum.KeyCode;
 
-	constructor(public readonly RawAction: A) {
+	public constructor(public readonly RawAction: A) {
 		super();
 
 		this.Delta = new Vector3();
@@ -31,7 +33,7 @@ export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 
 		action.SetContext(this.Context);
 
-		connection.Changed(() => this.Changed.Fire());
+		connection.Changed(() => (this.Changed as Signal).Fire());
 
 		thisConnection.Changed(() => {
 			this.SetTriggered(true);
@@ -45,4 +47,4 @@ export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 }
 
 const actionMt = AxisAction as LuaMetatable<AxisAction<AxisActionEntry>>;
-actionMt.__tostring = (c) => `Axis(${c.GetContentString()[0]})`;
+actionMt.__tostring = (c) => `Axis(${c.GetContentString()[0] ?? ""})`;

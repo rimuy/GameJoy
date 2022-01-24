@@ -2,7 +2,7 @@ import Signal from "@rbxts/signal";
 import { UserInputService as IS } from "@rbxts/services";
 import { Bin } from "@rbxts/bin";
 
-import { ActionEntry, RawActionEntry } from "../Definitions/Types";
+import { ActionEntry, RawActionEntry, SignalWithParams } from "../Definitions/Types";
 
 import * as t from "../Util/TypeChecks";
 
@@ -11,21 +11,18 @@ function checkInputs(
 	keyCode: Enum.KeyCode,
 	inputType: Enum.UserInputType,
 	processed: boolean,
-	callback: (processed: boolean) => void,
+	callback: (processed: boolean, ...args: Array<unknown>) => void,
 ) {
 	const context = action.Context;
 
 	if (context) {
-		const { Process } = context.Options ?? {};
+		const { Process } = context.Options;
 
-		const RawAction = action.RawAction as RawActionEntry;
+		const rawAction = action.RawAction as RawActionEntry;
 
 		if (
-			t.isActionEqualTo(RawAction, keyCode, inputType) &&
-			(Process === undefined ||
-				Process === processed ||
-				keyCode === Enum.KeyCode.Thumbstick1 ||
-				keyCode === Enum.KeyCode.Thumbstick2)
+			t.isActionEqualTo(rawAction, keyCode, inputType) &&
+			(Process === undefined || Process === processed)
 		) {
 			callback(processed);
 		}
@@ -45,53 +42,67 @@ export class ActionConnection {
 		this.bin.add(signal.Connect(callback));
 	}
 
-	static From(action: ActionEntry) {
+	public static From(action: ActionEntry) {
 		return new ActionConnection(action);
 	}
 
-	SendInputRequest(
+	public SendInputRequest(
 		keyCode: Enum.KeyCode,
 		inputType: Enum.UserInputType,
 		processed: boolean,
-		callback: (processed: boolean) => void,
+		callback: (processed: boolean, ...args: Array<unknown>) => void,
 	) {
 		checkInputs(this.Action, keyCode, inputType, processed, callback);
 	}
 
-	Began(callback: (processed: boolean) => void) {
-		this.Connect(this.Action.Began, callback);
-		this.bin.add(
-			IS.InputBegan.Connect(({ KeyCode, UserInputType }, processed) =>
-				this.SendInputRequest(KeyCode, UserInputType, processed, callback),
-			),
-		);
+	public Began(callback: (processed: boolean) => void) {
+		if (t.actionEntryIs(this.Action, "Action")) {
+			this.Connect(this.Action.Began as unknown as SignalWithParams, callback);
+			this.bin.add(
+				IS.InputBegan.Connect(({ KeyCode, UserInputType }, processed) =>
+					this.SendInputRequest(
+						KeyCode,
+						UserInputType,
+						processed,
+						callback,
+					),
+				),
+			);
+		}
 	}
 
-	Ended(callback: (processed: boolean) => void) {
-		this.Connect(this.Action.Ended, callback);
-		this.bin.add(
-			IS.InputEnded.Connect(({ KeyCode, UserInputType }, processed) =>
-				this.SendInputRequest(KeyCode, UserInputType, processed, callback),
-			),
-		);
+	public Ended(callback: (processed: boolean) => void) {
+		if (t.actionEntryIs(this.Action, "Action")) {
+			this.Connect(this.Action.Ended as unknown as SignalWithParams, callback);
+			this.bin.add(
+				IS.InputEnded.Connect(({ KeyCode, UserInputType }, processed) =>
+					this.SendInputRequest(
+						KeyCode,
+						UserInputType,
+						processed,
+						callback,
+					),
+				),
+			);
+		}
 	}
 
-	Destroyed(callback: () => void) {
-		this.Connect(this.Action.Destroyed, callback);
+	public Destroyed(callback: () => void) {
+		this.Connect(this.Action.Destroyed as Signal, callback);
 	}
 
-	Triggered(callback: (processed?: boolean) => void) {
-		this.Connect(this.Action.Triggered, callback);
+	public Triggered(callback: (processed?: boolean, ...args: Array<unknown>) => void) {
+		this.Connect(this.Action.Triggered as SignalWithParams, callback);
 	}
 
-	Released(callback: (processed?: boolean) => void) {
-		this.Connect(this.Action.Released, callback);
+	public Released(callback: (processed?: boolean) => void) {
+		this.Connect(this.Action.Released as unknown as SignalWithParams, callback);
 	}
 
-	Changed(callback: () => void) {
+	public Changed(callback: () => void) {
 		const { Action } = this;
 
-		this.Connect(Action.Changed, callback);
+		this.Connect((Action as unknown as { Changed: Signal }).Changed, callback);
 
 		if (t.actionEntryIs(Action, "AxisAction")) {
 			this.bin.add(
@@ -121,11 +132,13 @@ export class ActionConnection {
 		}
 	}
 
-	Cancelled(callback: () => void) {
-		this.Connect(this.Action.Cancelled, callback);
+	public Cancelled(callback: () => void) {
+		if (t.isCancellableAction(this.Action)) {
+			this.Connect(this.Action.Cancelled as Signal, callback);
+		}
 	}
 
-	Destroy() {
+	public Destroy() {
 		this.Action.Destroy();
 	}
 }

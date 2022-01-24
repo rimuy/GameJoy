@@ -1,43 +1,50 @@
+import Signal from "@rbxts/signal";
+
 import {
 	Action,
 	Axis,
 	Composite,
 	Dynamic,
+	Manual,
 	Middleware,
 	Optional,
 	Sequence,
 	Sync,
 	Union,
+	Unique,
 } from "../Actions";
+
 import aliases from "../Misc/Aliases";
 
 export type ActionEntry<A extends RawActionEntry = RawActionEntry> =
 	| Action<A>
 	| Axis<AxisActionEntry>
 	| Composite<A>
+	| Manual<Array<any>>
 	| Middleware<A>
 	| Dynamic<A>
 	| Optional<A>
 	| Sequence<A>
 	| Sync<A>
-	| Union<A>;
+	| Union<A>
+	| Unique<A>;
 
 export type ActionLike<A extends RawActionEntry> = A | ActionEntry<A>;
 
 export type ActionLikeArray<A extends RawActionEntry> = Array<ActionLike<A> | ActionLikeArray<A>>;
 
-export type ActionListener = () => void | Promise<void>;
+export type ActionListener<P extends Array<unknown> = []> = (...params: P) => void | Promise<void>;
 
-export type ActionKey = ActionLike<RawActionEntry> | ActionLikeArray<RawActionEntry>;
+export type ActionKey<A extends RawActionEntry> = ActionLike<A> | ActionLikeArray<A>;
 
 export type Aliases = typeof aliases;
 
 export type AliasKey = Aliases extends ReadonlyMap<infer K, infer _> ? K : never;
 
 /**
- * Utility type that holds all the available action entry types.
+ * Utility type that holds all the available action entry types for `DynamicAction`.
  */
-export type AnyAction = ActionEntry | ActionKey;
+export type AnyAction = AxisActionEntry | RawActionEntry;
 
 export type AxisActionLike =
 	| Enum.UserInputType.MouseMovement
@@ -165,22 +172,38 @@ export type RawAction = Exclude<Enum.KeyCode | Enum.UserInputType, UnusedKeys>;
 
 export type RawActionEntry = Exclude<CastsToEnum<RawAction>, CastsToEnum<UnusedKeys>> | AliasKey;
 
-/**
- * `ActionGhosting`:
- * Limits the amount of actions that can trigger if those have any raw action in common. If set to 0, this property will be ignored.
- *
- * `OnBefore`:
- * Applies a check on every completed action. If the check fails, the action won't be triggered.
- *
- * `Process`:
- * Specifies that the action should trigger if gameProcessedEvent matches the setting. If nothing is passed, the action will trigger independently.
- *
- * `RunSynchronously`:
- * Specifies if the actions are going to run synchronously or not.
- */
+export type ConsumerSignal<T extends Callback = () => void> = Omit<Signal<T>, "Fire" | "Destroy">;
+
+export type SignalWithParams = Signal<(...params: Array<any>) => void>;
+
+export interface ActionOptions {
+	Repeat?: number;
+	Timing?: number;
+}
+
 export interface ContextOptions {
 	readonly ActionGhosting?: number;
 	readonly OnBefore?: () => boolean;
 	readonly Process?: boolean;
 	readonly RunSynchronously?: boolean;
 }
+
+interface CamelCaseSignal<T extends (...args: Array<unknown>) => void> {
+	connect(this: SignalWrapper<T>, callback: T): SignalConnection;
+}
+
+interface PascalCaseSignal<T extends (...args: Array<unknown>) => void> {
+	Connect(this: SignalWrapper<T>, callback: T): SignalConnection;
+}
+
+interface CamelCaseSignalConnection {
+	disconnect(this: SignalConnection): void;
+}
+
+interface PascalCaseSignalConnection {
+	Disconnect(this: SignalConnection): void;
+}
+
+export type SignalWrapper<T extends Callback = () => void> = CamelCaseSignal<T> | PascalCaseSignal<T>;
+
+export type SignalConnection = CamelCaseSignalConnection | PascalCaseSignalConnection;

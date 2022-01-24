@@ -7,6 +7,8 @@ import {
 	ContextOptions,
 	RawAction,
 	RawActionEntry,
+	ConsumerSignal,
+	SignalWithParams,
 } from "../Definitions/Types";
 
 import { Context } from "./Context";
@@ -16,90 +18,105 @@ import { TranslateRawAction } from "../Util/TranslateRawAction";
 import { IsInputDown } from "../Util/IsInputDown";
 
 export abstract class BaseAction {
-	readonly Content: ReadonlyArray<RawAction> = new Array<RawAction>();
+	protected readonly Connected: ConsumerSignal;
 
-	readonly RawAction!: ActionLike<RawActionEntry> | ActionLikeArray<RawActionEntry>;
+	protected readonly Changed: ConsumerSignal;
 
-	readonly IsActive: boolean = false;
+	public readonly Content: ReadonlyArray<RawAction>;
 
-	readonly Resolved = new Signal();
+	public readonly RawAction!: ActionLike<RawActionEntry> | ActionLikeArray<RawActionEntry>;
 
-	readonly Rejected = new Signal();
+	public readonly IsActive;
 
-	readonly Triggered = new Signal<(processed?: boolean) => void>();
+	public readonly Resolved: ConsumerSignal;
 
-	readonly Released = new Signal<(processed?: boolean) => void>();
+	public readonly Rejected: ConsumerSignal;
 
-	readonly Began = new Signal<(processed: boolean) => void>();
+	public readonly Triggered: ConsumerSignal<(processed?: boolean, ...params: Array<any>) => void>;
 
-	readonly Ended = new Signal<(processed: boolean) => void>();
+	public readonly Released: ConsumerSignal<(processed?: boolean) => void>;
 
-	readonly Cancelled = new Signal();
+	public readonly Destroyed: ConsumerSignal;
 
-	readonly Connected = new Signal();
+	public readonly Context: Context<ContextOptions> | undefined;
 
-	readonly Changed = new Signal();
-
-	readonly Destroyed = new Signal();
-
-	readonly Context: Context<ContextOptions> | undefined;
-
-	constructor() {
-		const content = this.Content as Array<RawAction>;
-
-		const visit = (
-			action:
-				| RawActionEntry
-				| ActionLike<RawActionEntry>
-				| ActionLikeArray<RawActionEntry>,
-		) => {
-			if (t.isAction(action)) {
-				visit(action.RawAction);
-			} else if (t.isRawAction(action)) {
-				content.push(TranslateRawAction(action));
-			} else if (t.isActionLikeArray(action)) {
-				action.forEach((RawActionEntry) => visit(RawActionEntry));
-			}
-		};
+	public constructor() {
+		this.IsActive = false;
+		this.Content = [];
+		this.Connected = new Signal();
+		this.Changed = new Signal();
+		this.Resolved = new Signal();
+		this.Rejected = new Signal();
+		this.Triggered = new Signal();
+		this.Released = new Signal();
+		this.Destroyed = new Signal();
 
 		this.Destroyed.Connect(() => this.SetContext(undefined));
 		this.Connected.Connect(() => {
 			this.OnConnected();
-			content.clear();
-			visit(this.RawAction);
+			this.LoadContent();
 		});
 	}
 
-	protected SetTriggered(value: boolean, ignoreEventCall?: boolean) {
+	private VisitEachRawAction(
+		action: RawActionEntry | ActionLike<RawActionEntry> | ActionLikeArray<RawActionEntry>,
+	) {
+		if (t.isAction(action)) {
+			this.VisitEachRawAction(action.RawAction);
+		} else if (t.isRawAction(action)) {
+			(this.Content as Array<RawAction>).push(TranslateRawAction(action));
+		} else if (t.isActionLikeArray(action)) {
+			action.forEach((entry) => this.VisitEachRawAction(entry));
+		}
+	}
+
+	protected LoadContent() {
+		const content = this.Content as Array<RawAction>;
+		content.clear();
+
+		this.VisitEachRawAction(this.RawAction);
+	}
+
+	protected SetTriggered(value: boolean, ignoreEventCall?: boolean, ...args: Array<unknown>) {
 		(this.IsActive as boolean) = value;
 
 		if (!ignoreEventCall) {
-			this[value === true ? "Triggered" : "Released"].Fire(
+			(this[value === true ? "Triggered" : "Released"] as SignalWithParams).Fire(
 				this.Context?.Options?.Process,
+				...args,
 			);
 		}
 	}
 
-	protected OnConnected() {}
+	protected abstract OnConnected(): void;
 
 	/** @internal */
-	SetContext<O extends ContextOptions>(context: Context<O> | undefined) {
+	public SetContext<O extends ContextOptions>(context: Context<O> | undefined) {
 		(this.Context as unknown) = context;
-		this.Connected.Fire();
+		(this.Connected as Signal).Fire();
 	}
 
-	GetActiveInputs() {
+	/**
+	 * Returns a list of the action's current active inputs.
+	 */
+	public GetActiveInputs() {
 		return this.Content.filter((input) => IsInputDown(input));
 	}
 
-	GetContentString() {
+	/**
+	 * Returns a string list containing all the input names from the action.
+	 */
+	public GetContentString() {
 		return this.Content.map((x) => {
 			const code = IS.GetStringForKeyCode(x as Enum.KeyCode);
 			return t.isKeyCode(x) && code.size() > 0 ? code : x.Name;
 		}) as ReadonlyArray<RawAction["Name"]>;
 	}
 
-	Destroy() {
-		this.Destroyed.Fire();
+	/**
+	 * Destroys the action and clean up its connections.
+	 */
+	public Destroy() {
+		(this.Destroyed as Signal).Fire();
 	}
 }

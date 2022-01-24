@@ -1,12 +1,14 @@
 import { Vec } from "@rbxts/rust-classes";
+import Signal from "@rbxts/signal";
+
+import { ActionLike, ActionLikeArray, RawActionEntry, ConsumerSignal } from "../Definitions/Types";
 
 import { ActionConnection } from "../Class/ActionConnection";
-import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
 import { BaseAction } from "../Class/BaseAction";
-import { Action } from "./Action";
-import { UnionAction as Union } from "./UnionAction";
 
-import { TransformAction } from "../Misc/TransformAction";
+import { transformAction } from "../Misc/TransformAction";
+import { isOptional } from "../Misc/IsOptional";
+
 import * as t from "../Util/TypeChecks";
 
 /**
@@ -17,29 +19,28 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 
 	private canCancel;
 
-	constructor(public readonly RawAction: ActionLikeArray<A>) {
+	public readonly Cancelled: ConsumerSignal;
+
+	public constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
+		this.Cancelled = new Signal();
 
 		const rawActions = RawAction.filter(
-			(action) => !t.isAction(action) || !t.actionEntryIs(action, "OptionalAction"),
+			(action) => !t.isAction(action) || !isOptional(action),
 		);
 
 		const queue = (this.queue = Vec.withCapacity(rawActions.size()));
 		this.canCancel = false;
 
 		ActionConnection.From(this).Changed(() => {
-			const size = queue.asPtr().size();
+			const size = queue.len();
 
 			if (
 				size > 0 &&
 				queue
 					.iter()
 					.enumerate()
-					.all(
-						([i, entry]) =>
-							RawAction[i] === entry ||
-							t.actionEntryIs(RawAction[i], "OptionalAction"),
-					)
+					.all(([i, entry]) => RawAction[i] === entry)
 			) {
 				this.canCancel = true;
 
@@ -57,7 +58,7 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 		const { queue } = this;
 
 		for (const entry of this.RawAction) {
-			const action = TransformAction<A>(entry, Action, Union);
+			const action = transformAction<A>(entry);
 			const connection = ActionConnection.From(action);
 
 			action.SetContext(this.Context);
@@ -65,24 +66,30 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 			let began = false;
 
 			connection.Triggered(() => {
-				if (!t.actionEntryIs(entry, "OptionalAction")) queue.push(entry);
+				if (!isOptional(entry)) {
+					queue.push(entry);
+				}
+
 				began = true;
 
-				this.Changed.Fire();
+				(this.Changed as Signal).Fire();
 			});
 
 			connection.Released(() => {
-				const index = queue.asPtr().findIndex((e) => e === entry);
-				if (began && index >= 0) queue.remove(index);
+				const index = queue.asPtr().findIndex((x) => x === entry);
+
+				if (began && index >= 0) {
+					queue.remove(index);
+				}
 
 				began = false;
 
 				if (this.canCancel) {
 					this.canCancel = false;
-					this.Cancelled.Fire();
+					(this.Cancelled as Signal).Fire();
 				}
 
-				this.Changed.Fire();
+				(this.Changed as Signal).Fire();
 			});
 
 			ActionConnection.From(this).Destroyed(() => {

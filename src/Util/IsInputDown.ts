@@ -6,11 +6,13 @@ import { TranslateRawAction } from "./TranslateRawAction";
 
 import * as t from "../Util/TypeChecks";
 
-function check(input: RawActionEntry) {
-	if (t.isMouseButtonAction(input)) {
-		return IS.IsMouseButtonPressed(TranslateRawAction(input) as Enum.UserInputType);
-	} else if (!t.isActionEqualTo(input, Enum.KeyCode.Unknown)) {
-		return IS.IsKeyDown(TranslateRawAction(input) as Enum.KeyCode);
+function check(rawAction: RawActionEntry) {
+	const input = TranslateRawAction(rawAction);
+
+	if (t.isMouseButton(input)) {
+		return IS.IsMouseButtonPressed(input);
+	} else if (t.isKeyCode(input)) {
+		return IS.IsKeyDown(input);
 	} else {
 		return false;
 	}

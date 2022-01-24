@@ -1,12 +1,12 @@
 import Signal from "@rbxts/signal";
 
-import { ActionEntry, ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, AnyAction, AxisActionEntry } from "../Definitions/Types";
+
 import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
-import { Action } from "./Action";
-import { UnionAction as Union } from "./UnionAction";
 
-import { TransformAction } from "../Misc/TransformAction";
+import { transformAction } from "../Misc/TransformAction";
+
 import * as t from "../Util/TypeChecks";
 
 /**
@@ -14,64 +14,67 @@ import * as t from "../Util/TypeChecks";
  *
  * It has an `Update` method and a `.Updated` signal that fires whenever it's updated.
  */
-export class DynamicAction<A extends RawActionEntry> extends BaseAction {
-	private CurrentConnection: ActionConnection | undefined;
+export class DynamicAction<A extends AnyAction> extends BaseAction {
+	private currentConnection: ActionConnection | undefined;
 
-	private ConnectAction(newAction: ActionLike<A> | ActionLikeArray<A>) {
-		const action = TransformAction<A>(newAction, Action, Union);
-		const connection = ActionConnection.From(action);
+	public readonly Updated;
 
-		(this.RawAction as unknown) = action.RawAction;
-		action.SetContext(this.Context);
-
-		connection.Triggered(() => {
-			this.SetTriggered(true);
-			this.Changed.Fire();
-		});
-
-		connection.Released(() => {
-			if (this.IsActive) {
-				this.SetTriggered(false);
-				this.Changed.Fire();
-			}
-		});
-
-		connection.Cancelled(() => this.Cancelled.Fire());
-
-		this.CurrentConnection = connection;
-	}
-
-	readonly Updated = new Signal();
-
-	constructor(public readonly RawAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
+	public constructor(
+		public readonly RawAction: AxisActionEntry | ActionLike<A> | ActionLikeArray<A>,
+	) {
 		super();
+		this.Updated = new Signal();
 
 		ActionConnection.From(this).Destroyed(() => {
-			this.CurrentConnection?.Action.Destroy();
+			this.currentConnection?.Action.Destroy();
 		});
+	}
+
+	private ConnectAction(newAction: AxisActionEntry | ActionLike<A> | ActionLikeArray<A>) {
+		const action = transformAction<A>(newAction);
+		(this.RawAction as unknown) = action.RawAction;
+
+		this.LoadContent();
+
+		if (this.Context) {
+			const connection = ActionConnection.From(action);
+			action.SetContext(this.Context);
+
+			connection.Triggered(() => {
+				this.SetTriggered(true);
+				(this.Changed as Signal).Fire();
+			});
+
+			connection.Released(() => {
+				if (this.IsActive) {
+					this.SetTriggered(false);
+					(this.Changed as Signal).Fire();
+				}
+			});
+
+			this.currentConnection = connection;
+		}
 	}
 
 	protected OnConnected() {
 		this.ConnectAction(this.RawAction);
 	}
 
-	Update(newAction: A | ActionEntry<A> | Array<A | ActionEntry<A>>) {
+	/**
+	 * Deactivates and updates the current action.
+	 */
+	public Update(newAction: AxisActionEntry | ActionLike<A> | ActionLikeArray<A>) {
 		if (!t.isValidActionEntry(newAction)) {
 			error(debug.traceback("Invalid action entry."));
-		} else if (!this.Context) {
-			error(
-				debug.traceback(
-					"You can't update an action that doesn't belong to a context.",
-				),
-			);
 		}
 
-		this.CurrentConnection?.Destroy();
+		this.SetTriggered(false);
+		this.currentConnection?.Destroy();
 		this.ConnectAction(newAction);
 
 		this.Updated.Fire();
 	}
 }
 
-const actionMt = DynamicAction as LuaMetatable<DynamicAction<RawActionEntry>>;
+const actionMt = DynamicAction as LuaMetatable<DynamicAction<AnyAction>>;
 actionMt.__tostring = (c) => `Dynamic(${c.GetContentString().join(", ")})`;
