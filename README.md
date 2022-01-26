@@ -24,7 +24,7 @@ npm i @rbxts/gamejoy
 For [wally](https://wally.run/) users, the package can be installed by adding the following line into their `wally.toml`.
 ```cs
 [dependencies]
-GameJoy = "rimuy/gamejoy@1.1.0"
+GameJoy = "rimuy/gamejoy@1.1.1"
 ```
 
 After that, just run `wally install`.
@@ -325,7 +325,7 @@ context.Bind(new Middleware("M", timeMiddleware), () => {
 });
 ```
 
-### Whitelisting actions from async behaviour
+### Whitelisting actions from async behavior
 Just like the above, `Sync` also aims to apply a configuration trait to a specific action, this time replicating the `RunSynchronously` option, making a specific action able to trigger synchronously.
 
 ```js

@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/gamejoy",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "A simple class-based input library",
 	"main": "out/init.lua",
 	"types": "out/index.d.ts",
@@ -31,10 +31,10 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/HylianBasement/GameJoy.git"
+		"url": "git+https://github.com/Rimuy/GameJoy.git"
 	},
 	"bugs": {
-		"url": "https://github.com/HylianBasement/GameJoy/issues"
+		"url": "https://github.com/Rimuy/GameJoy/issues"
 	},
 	"files": [
 		"out"

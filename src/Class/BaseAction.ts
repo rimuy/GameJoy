@@ -92,8 +92,19 @@ export abstract class BaseAction {
 
 	/** @internal */
 	public SetContext<O extends ContextOptions>(context: Context<O> | undefined) {
+		const wasBound = this.IsBound();
 		(this.Context as unknown) = context;
-		(this.Connected as Signal).Fire();
+
+		if (!wasBound) {
+			(this.Connected as Signal).Fire();
+		}
+	}
+
+	/**
+	 * Checks if the action belongs to a context.
+	 */
+	public IsBound() {
+		return this.Context !== undefined;
 	}
 
 	/**
