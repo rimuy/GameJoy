@@ -24,7 +24,7 @@ npm i @rbxts/gamejoy
 For [wally](https://wally.run/) users, the package can be installed by adding the following line into their `wally.toml`.
 ```cs
 [dependencies]
-GameJoy = "rimuy/gamejoy@1.1.1"
+GameJoy = "rimuy/gamejoy@1.1.4"
 ```
 
 After that, just run `wally install`.
@@ -214,7 +214,7 @@ context.Bind(new Sequence(["LeftAlt", "E"]), () => {
 });
 ```
 
-`Sequence` is cancellable. When one of the keys is released, it'll trigger the `Cancelled` event. If there is already an action being executed and the composite was already queued, it'll remove the composite from the queue, preventing it to be triggered. This doesn't apply if `RunSynchronously` is set to true.
+`Sequence` is cancellable. When one of the keys is released, it'll trigger the `Cancelled` event. If there is already an action being executed and the composite was already queued, it'll remove the composite from the queue, preventing it from being triggered. This doesn't apply if `RunSynchronously` is set to true.
 
 ```js
 context.BindEvent("onCancel", sequence.Cancelled, () => {
@@ -330,7 +330,7 @@ Just like the above, `Sync` also aims to apply a configuration trait to a specif
 
 ```js
 context
-        .Bind("A", () => task.wait(5))
+        .Bind("A", () => { task.wait(5); })
         .Bind("B", () => print("Needs to wait till A is done..."))
         .Bind(new Sync("C"), () => {
                 print("Will be executed even if there is already a pending action!");
