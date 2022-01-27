@@ -1,11 +1,24 @@
 [package]
 name = "rimuy/gamejoy"
-description = "A simple class-based input library"
-version = "1.1.1"
+description = "Simple class-based input library"
+version = "1.1.4"
 license = "MIT"
 authors = ["Rimuy"]
 realm = "shared"
 registry = "https://github.com/upliftgames/wally-index"
-exclude = ["*.d.ts"]
+exclude = ["*"]
+include = [
+        "include",
+        "include/**/*",
+        "out",
+        "out/**/*",
+        "LICENSE",
+        "README.md",
+        "default.project.json",
+        "node_modules",
+        "node_modules/@rbxts",
+        "node_modules/@rbxts/**/*",
+        "wally.toml",
+]
 
 [dependencies]
