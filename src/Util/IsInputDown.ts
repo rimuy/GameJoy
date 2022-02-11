@@ -1,33 +1,41 @@
 import { UserInputService as IS } from "@rbxts/services";
 
-import { RawActionEntry } from "../Definitions/Types";
+import { LayoutKind, translateKeyCode } from "../Misc/KeyboardLayout";
 
-import { TranslateRawAction } from "./TranslateRawAction";
+import { RawActionEntry } from "../definitions";
 
-import * as t from "../Util/TypeChecks";
+import { extractEnum } from "./ExtractEnum";
 
-function check(rawAction: RawActionEntry) {
-	const input = TranslateRawAction(rawAction);
+import * as t from "./TypeChecks";
+
+function check(rawAction: RawActionEntry, layout: LayoutKind) {
+	const input = extractEnum(rawAction);
 
 	if (t.isMouseButton(input)) {
 		return IS.IsMouseButtonPressed(input);
 	} else if (t.isKeyCode(input)) {
-		return IS.IsKeyDown(input);
-	} else {
-		return false;
+		return IS.IsKeyDown(translateKeyCode(input, layout));
 	}
+
+	return false;
 }
 
 /**
  * Checks if all the specified inputs are being pressed.
  */
-export function IsInputDown(input: RawActionEntry | Array<RawActionEntry>) {
-	return (t.isRawActionArray(input) ? input : [input]).every((x) => check(x));
+export function isInputDown(
+	input: RawActionEntry | Array<RawActionEntry>,
+	keyboardLayout: LayoutKind = LayoutKind.QWERTY,
+) {
+	return (t.isRawActionArray(input) ? input : [input]).every((x) => check(x, keyboardLayout));
 }
 
 /**
  * Checks if any of the specified inputs is being pressed.
  */
-export function IsAnyInputDown(inputs: Array<RawActionEntry>) {
-	return inputs.some((x) => check(x));
+export function isAnyInputDown(
+	inputs: Array<RawActionEntry>,
+	keyboardLayout: LayoutKind = LayoutKind.QWERTY,
+) {
+	return inputs.some((x) => check(x, keyboardLayout));
 }

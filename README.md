@@ -24,7 +24,7 @@ npm i @rbxts/gamejoy
 For [wally](https://wally.run/) users, the package can be installed by adding the following line into their `wally.toml`.
 ```cs
 [dependencies]
-GameJoy = "rimuy/gamejoy@1.1.4"
+GameJoy = "rimuy/gamejoy@2.0.0"
 ```
 
 After that, just run `wally install`.
@@ -39,9 +39,7 @@ Model files are uploaded to every release as `.rbxmx` files. You can download th
     These are all the action classes that are currently available:
 
     ```js
-    import { Actions } from "@rbxts/gamejoy";
-
-    const { Action, Axis, Dynamic, Manual, Middleware, Optional, Sequence, Synchronous, Union, Unique } = Actions;
+    import { Action, Axis, Dynamic, Manual, Optional, Sequence, Sync, Union, Unique } from "@rbxts/gamejoy";
     ```
     - #### Aliases
         To shorten some existing keycode names, the library provides a ton of aliases that can be used instead.
@@ -59,6 +57,10 @@ Model files are uploaded to every release as `.rbxmx` files. You can download th
              */
             ActionGhosting: 1,
             /**
+             * (defaults to QWERTY)
+             */
+            KeyboardLayout: LayoutKind.QWERTY,
+            /**
              * Applies a check on every completed action. 
              * If the check fails, the action won't be triggered. (defaults to () => true)
              */
@@ -75,9 +77,13 @@ Model files are uploaded to every release as `.rbxmx` files. You can download th
             RunSynchronously: false,
     });
 
-    context.Bind(["MouseButton1", "ButtonX"], () => {
-            CharacterController.Attack();
-    });
+    context
+        .Bind(["Mouse1", "ControlX"], () => {
+                CharacterController.Attack();
+        })
+        .Bind(["E", "R2"], () => {
+                CharacterController.Block();
+        });
     ```
     - #### Queued actions
         GameJoy contains a built-in action queue that automatically removes a resolved action from the queue and then executes the next one that was triggered, if the same is still pending. Every action that is successfully triggered, is sent to that queue, which will have the following behavior:
@@ -95,7 +101,7 @@ Model files are uploaded to every release as `.rbxmx` files. You can download th
         Events requires identifiers, so that it can be possible to unbind them when needed.
 
         ```js
-        context.BindEvent("onCharacterDamaged", CharacterController.Damaged, (oldHealth, health) => {
+        context.Bind(useEvent(CharacterController.Damaged), (oldHealth, health) => {
                 const damage = oldHealth - health;
                 print(`You lost ${damage}HP!`);
 
@@ -103,11 +109,8 @@ Model files are uploaded to every release as `.rbxmx` files. You can download th
         });
         ```
 
-        If you want an event connection that doesn't use the queue, but still want it to pass the context's `OnBefore` check,
-        and to be disconnected when using the context's unbinding methods, you should use `Context.BindSyncEvent`.
-
         ```js
-        context.BindSyncEvent("onRender", RunService.RenderStepped, (delta) => {
+        context.BindSync(useEvent(RunService.RenderStepped), (delta) => {
                 print(delta);
         });
         ```

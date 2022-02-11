@@ -1,6 +1,6 @@
 import Signal from "@rbxts/signal";
 
-import { ActionLike, ActionLikeArray, AnyAction, AxisActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, AnyAction, AxisActionEntry } from "../definitions";
 
 import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
@@ -11,18 +11,20 @@ import * as t from "../Util/TypeChecks";
 
 /**
  * Variant that accepts any action as a parameter and can be updated.
- *
- * It has an `Update` method and a `.Updated` signal that fires whenever it's updated.
  */
 export class DynamicAction<A extends AnyAction> extends BaseAction {
+	protected Parameters;
+
 	private currentConnection: ActionConnection | undefined;
 
+	/** Fired whenever the action is updated. */
 	public readonly Updated;
 
 	public constructor(
 		public readonly RawAction: AxisActionEntry | ActionLike<A> | ActionLikeArray<A>,
 	) {
 		super();
+		this.Parameters = new Array<unknown>();
 		this.Updated = new Signal();
 
 		ActionConnection.From(this).Destroyed(() => {
@@ -60,6 +62,10 @@ export class DynamicAction<A extends AnyAction> extends BaseAction {
 		this.ConnectAction(this.RawAction);
 	}
 
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
 	/**
 	 * Deactivates and updates the current action.
 	 */
@@ -73,6 +79,10 @@ export class DynamicAction<A extends AnyAction> extends BaseAction {
 		this.ConnectAction(newAction);
 
 		this.Updated.Fire();
+	}
+
+	public Clone() {
+		return new DynamicAction<A>(this.RawAction);
 	}
 }
 

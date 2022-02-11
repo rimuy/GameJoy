@@ -2,14 +2,14 @@ import { Option, Vec } from "@rbxts/rust-classes";
 import { Bin } from "@rbxts/bin";
 import Signal from "@rbxts/signal";
 
-import { ActionEntry, ActionListener } from "../Definitions/Types";
+import { ActionEntry, ActionListener } from "../definitions";
 
 import * as t from "../Util/TypeChecks";
 
 interface QueueEntry {
 	action: ActionEntry;
 	bin: Bin;
-	executable: () => Promise<Promise<void>>;
+	executable: () => Promise<unknown>;
 	isExecuting: boolean;
 }
 
@@ -49,11 +49,11 @@ export class ActionQueue {
 		const bin = new Bin();
 
 		const executable = () => {
-			const execute = Promise.try(async () => {
+			const execute = Promise.try(() => {
 				const result = listener();
 
 				if (Promise.is(result)) {
-					await result;
+					result.await();
 				}
 
 				Entries.remove(0);

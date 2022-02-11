@@ -1,6 +1,6 @@
 import type Signal from "@rbxts/signal";
 
-import { ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+import { ActionEntry, ActionLikeArray, RawActionEntry } from "../definitions";
 
 import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
@@ -11,8 +11,14 @@ import { transformAction } from "../Misc/TransformAction";
  * Variant that accepts multiple entries as a parameter.
  */
 export class UnionAction<A extends RawActionEntry> extends BaseAction {
+	private current: ActionEntry<A> | undefined;
+
+	protected Parameters;
+
 	public constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
+
+		this.Parameters = new Array<unknown>();
 	}
 
 	protected OnConnected() {
@@ -25,7 +31,8 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 			action.SetContext(this.Context);
 
 			connection.Triggered(() => {
-				this.SetTriggered(true);
+				this.current = action;
+				this.SetTriggered(true, false, action);
 				(this.Changed as Signal).Fire();
 			});
 
@@ -39,6 +46,14 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 				(this.Changed as Signal).Fire();
 			});
 		}
+	}
+
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
+	public Clone() {
+		return new UnionAction<A>(this.RawAction);
 	}
 }
 

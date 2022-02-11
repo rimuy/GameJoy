@@ -1,7 +1,7 @@
 import { Vec } from "@rbxts/rust-classes";
 import Signal from "@rbxts/signal";
 
-import { ActionLike, ActionLikeArray, RawActionEntry, ConsumerSignal } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry, ConsumerSignal } from "../definitions";
 
 import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
@@ -19,11 +19,14 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 
 	private canCancel;
 
+	protected Parameters;
+
 	public readonly Cancelled: ConsumerSignal;
 
 	public constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
 		this.Cancelled = new Signal();
+		this.Parameters = new Array<unknown>();
 
 		const rawActions = RawAction.filter(
 			(action) => !t.isAction(action) || !isOptional(action),
@@ -96,6 +99,14 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 				action.Destroy();
 			});
 		}
+	}
+
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
+	public Clone() {
+		return new SequenceAction<A>(this.RawAction);
 	}
 }
 

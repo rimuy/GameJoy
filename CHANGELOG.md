@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0]
+This update introduces a lot of breaking changes.
+
+### Added
+* Added four hooks: `useEvent`, `useMiddleware`, `useParameters` and `useThrottle`.
+* Added aliases for mouse buttons and most special characters.
+* Added `LayoutKind` and `GamepadKind` enums.
+* Added `KeyboardLayout` context option, which accepts a `LayoutKind` enum item.
+* Added `extractEnum` utility function.
+* Added `isAxis1d`, `isAxis2d` & `isAxisGyro` type check functions.
+
+### Changed
+* **[BREAKING CHANGE]** Removed `BindEvent` & `BindSyncEvent` in favour of `useEvent` and `BindSync`.
+* **[BREAKING CHANGE]** Removed `Middleware` action in favour of the `useMiddleware` hook.
+* **[BREAKING CHANGE]** Made `Delta` and `Position` fields of `AxisAction` private.
+* Changed `AxisAction` to have parameters instead of class fields.
+* Context's `OnBefore` assertion now also accepts a boolean promise return.
+* `isInputDown` utility function now accepts an optional `LayoutKind` parameter.
+
 ## [1.1.4]
 ### Fixed
 * Fixed wally build
