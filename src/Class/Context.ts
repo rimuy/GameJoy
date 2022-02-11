@@ -108,8 +108,9 @@ export class Context<O extends ContextOptions> {
 		const { actions, pending, queue } = this;
 		const { RunSynchronously: isSync, OnBefore, ActionGhosting: ghostingCap } = this.Options;
 		const listener = () => actions.get(action).expect(ACTION_UNWRAP_ERROR)(...args);
+		const result = OnBefore();
 
-		if (OnBefore() === true) {
+		if (Promise.is(result) ? result.await()[0] : result) {
 			pending.push([action, listener]);
 
 			if (this.isPending) return;

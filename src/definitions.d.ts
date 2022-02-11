@@ -112,7 +112,7 @@ export interface ActionOptions {
 export interface ContextOptions {
 	readonly ActionGhosting?: number;
 	readonly KeyboardLayout?: LayoutKind;
-	readonly OnBefore?: () => boolean;
+	readonly OnBefore?: () => boolean | Promise<boolean>;
 	readonly Process?: boolean;
 	readonly RunSynchronously?: boolean;
 }
