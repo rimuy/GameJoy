@@ -8,7 +8,7 @@ import { BaseAction } from "../Class/BaseAction";
 import { transformAction } from "../Misc/TransformAction";
 
 /**
- * Variant that is used to act as a "ghost" action when placed inside objects that accepts multiple entries.
+ * Acts as a "ghost" action when placed inside objects that accepts multiple entries.
  * Its parent action can trigger without the need of the action being active, and will trigger again once the action activates.
  */
 export class OptionalAction<A extends RawActionEntry> extends BaseAction {
@@ -46,7 +46,11 @@ export class OptionalAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	public Clone() {
-		return new OptionalAction<A>(this.RawAction);
+		const newAction = new OptionalAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

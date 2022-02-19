@@ -1,14 +1,9 @@
 import { BaseAction } from "../Class/BaseAction";
-import { ActionConnection } from "../Class/ActionConnection";
-
-import { transformAction } from "../Misc/TransformAction";
 
 import { tuple } from "../Misc/Tuple";
 
-import { ActionLike, ActionLikeArray, RawActionEntry } from "../definitions";
-
 /**
- * Variant that is used to act as a placeholder for manual triggering.
+ * Acts as a placeholder for manual triggering.
  */
 export class ManualAction<P extends Array<unknown> = []> extends BaseAction {
 	protected Parameters;
@@ -43,7 +38,11 @@ export class ManualAction<P extends Array<unknown> = []> extends BaseAction {
 	}
 
 	public Clone() {
-		return new ManualAction<P>();
+		const newAction = new ManualAction<P>();
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

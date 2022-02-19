@@ -8,7 +8,7 @@ import { BaseAction } from "../Class/BaseAction";
 import { transformAction } from "../Misc/TransformAction";
 
 /**
- * Variant that accepts multiple entries as a parameter.
+ * Accepts multiple entries as a parameter and triggers whenever one of its entries is triggered.
  */
 export class UnionAction<A extends RawActionEntry> extends BaseAction {
 	private current: ActionEntry<A> | undefined;
@@ -53,7 +53,11 @@ export class UnionAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	public Clone() {
-		return new UnionAction<A>(this.RawAction);
+		const newAction = new UnionAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

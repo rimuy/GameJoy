@@ -9,6 +9,7 @@ import {
 	RawActionEntry,
 	ConsumerSignal,
 	SignalWithParams,
+	ActionEntry,
 } from "../definitions";
 
 import { Context } from "./Context";
@@ -23,6 +24,10 @@ export abstract class BaseAction {
 	protected readonly Connected: ConsumerSignal;
 
 	protected readonly Changed: ConsumerSignal;
+
+	protected Middleware?: (action: ActionEntry<RawAction>) => boolean | Promise<boolean>;
+
+	protected OnTriggered: () => void;
 
 	/**
 	 * Returns a list containing all the keys and input states that are registered in the context,
@@ -65,6 +70,7 @@ export abstract class BaseAction {
 		this.IsLocked = false;
 		this.IsReady = false;
 		this.Content = [];
+		this.OnTriggered = () => {};
 		this.Connected = new Signal();
 		this.Changed = new Signal();
 		this.Resolved = new Signal();

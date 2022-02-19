@@ -9,7 +9,7 @@ import { transformAction } from "../Misc/TransformAction";
 import { isOptional } from "../Misc/IsOptional";
 
 /**
- * Variant that requires all of its entries to be active for it to trigger.
+ * Requires all of its entries to be active for it to trigger.
  */
 export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 	protected Parameters;
@@ -67,7 +67,11 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	public Clone() {
-		return new CompositeAction<A>(this.RawAction);
+		const newAction = new CompositeAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

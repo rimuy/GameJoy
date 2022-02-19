@@ -8,7 +8,7 @@ import { ActionConnection } from "../Class/ActionConnection";
 import { transformAction } from "../Misc/TransformAction";
 
 /**
- * Variant that synchronizes its action when placed on the highest hierarchy.
+ * Synchronizes its action when placed on the highest hierarchy.
  * Useful when the `RunSynchronously` option is disabled but you want a specific action to be executed synchronously.
  */
 export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
@@ -48,7 +48,11 @@ export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	public Clone() {
-		return new SynchronousAction<A>(this.RawAction);
+		const newAction = new SynchronousAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

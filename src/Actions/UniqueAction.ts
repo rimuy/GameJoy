@@ -10,7 +10,7 @@ import { transformAction } from "../Misc/TransformAction";
 import { isOptional } from "../Misc/IsOptional";
 
 /**
- * Variant that requires **only one** of its entries to be active for it to trigger.
+ * Requires **only one** of its entries to be active for it to trigger.
  */
 export class UniqueAction<A extends RawActionEntry> extends BaseAction {
 	private current: ActionEntry<A> | undefined;
@@ -84,7 +84,11 @@ export class UniqueAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	public Clone() {
-		return new UniqueAction<A>(this.RawAction);
+		const newAction = new UniqueAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

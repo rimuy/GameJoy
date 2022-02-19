@@ -23,7 +23,7 @@ const layouts: Record<LayoutKind, ReadonlyMap<Enum.KeyCode, Enum.KeyCode>> = {
 		[Enum.KeyCode.Equals, Enum.KeyCode.RightBracket],
 		[Enum.KeyCode.Q, Enum.KeyCode.Ampersand],
 		[Enum.KeyCode.W, Enum.KeyCode.Comma],
-		[Enum.KeyCode.E, Enum.KeyCode.Period],
+		[Enum.KeyCode.E, Enum.KeyCode.Colon],
 		[Enum.KeyCode.R, Enum.KeyCode.P],
 		[Enum.KeyCode.T, Enum.KeyCode.Y],
 		[Enum.KeyCode.Y, Enum.KeyCode.F],
@@ -50,7 +50,7 @@ const layouts: Record<LayoutKind, ReadonlyMap<Enum.KeyCode, Enum.KeyCode>> = {
 		[Enum.KeyCode.B, Enum.KeyCode.X],
 		[Enum.KeyCode.N, Enum.KeyCode.B],
 		[Enum.KeyCode.Comma, Enum.KeyCode.W],
-		[Enum.KeyCode.Period, Enum.KeyCode.V],
+		[Enum.KeyCode.Colon, Enum.KeyCode.V],
 		[Enum.KeyCode.Slash, Enum.KeyCode.Z],
 	]),
 	[LayoutKind.Colemak]: createLayout([

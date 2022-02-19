@@ -5,22 +5,28 @@ import {
 	ActionEntry,
 	ActionKey,
 	ActionLikeArray,
+	AxisActionEntry,
 	ConsumerSignal,
 	RawActionEntry,
 	TransformAction,
 } from "../definitions";
 
-import { ActionConnection } from "../Class/ActionConnection";
+import type { Axis } from "../Actions";
 
 import { transformAction } from "../Misc/TransformAction";
 
 import * as t from "../Util/TypeChecks";
 
+// Axis actions shouldn't be supported
+type Throttle<T> = Exclude<T, Axis<AxisActionEntry>>;
+
 /**
  * Changes the behavior of an action, making it loop-trigger each time in a given interval, until it's deactivated.
  */
 export function useThrottle<R extends RawActionEntry, A extends ActionKey<R>>(
-	action: A extends ActionEntry<R> ? A : A extends ActionLikeArray<R> ? ActionLikeArray<R> : R,
+	action: Throttle<
+		A extends ActionEntry<R> ? A : A extends ActionLikeArray<R> ? ActionLikeArray<R> : R
+	>,
 	interval = 1 / 60,
 	debounce = 0.5,
 ) {
@@ -53,8 +59,8 @@ export function useThrottle<R extends RawActionEntry, A extends ActionKey<R>>(
 		isActive = false;
 	}
 
-	ActionConnection.From(cloned).Triggered(() => {
-		if (isActive) return;
+	function onTriggered() {
+		if (isActive || !cloned) return;
 
 		isActive = true;
 
@@ -71,7 +77,9 @@ export function useThrottle<R extends RawActionEntry, A extends ActionKey<R>>(
 		])
 			.then(onResolved)
 			.catch(onRejected);
-	});
+	}
+
+	(cloned as unknown as { OnTriggered: () => void }).OnTriggered = onTriggered;
 
 	return cloned as unknown as TransformAction<R, A>;
 }

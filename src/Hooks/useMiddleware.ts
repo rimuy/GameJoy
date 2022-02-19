@@ -6,8 +6,6 @@ import {
 	TransformAction,
 } from "../definitions";
 
-import { ActionConnection } from "../Class/ActionConnection";
-
 import { transformAction } from "../Misc/TransformAction";
 
 import * as t from "../Util/TypeChecks";
@@ -20,19 +18,11 @@ export function useMiddleware<R extends RawActionEntry, A extends ActionKey<R>>(
 	middleware: (action: TransformAction<R, A>) => boolean | Promise<boolean>,
 ) {
 	const cloned = t.isAction(action) ? action.Clone() : transformAction<R>(action as never);
-	cloned.Lock();
-
-	ActionConnection.From(cloned).Triggered((_, ...args) => {
-		const result = middleware(cloned as never);
-
-		if (Promise.is(result) ? result.await()[0] : result) {
-			(
-				cloned.Context! as unknown as {
-					_Check(action: ActionEntry<R>, ...args: Array<unknown>): void;
-				}
-			)._Check(cloned, ...args);
+	(
+		cloned as unknown as {
+			Middleware: (action: TransformAction<R, A>) => boolean | Promise<boolean>;
 		}
-	});
+	).Middleware = middleware;
 
 	return cloned as unknown as TransformAction<R, A>;
 }

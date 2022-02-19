@@ -13,13 +13,15 @@ import type { numberAxisTypes, vector2AxisTypes } from "../Misc/Entries";
 
 import { tuple } from "../Misc/Tuple";
 
+export type NumberAxisAlias = "L1" | "R1" | "L2" | "R2";
+
 /**
- * Variant that provides support for inputs that have a continuous range.
+ * Provides support for inputs that have a continuous range.
  * The action is triggered everytime the input is changed.
  */
 export class AxisAction<
 	A extends AxisActionEntry,
-	V = A extends typeof numberAxisTypes[number]
+	V = A extends typeof numberAxisTypes[number] | NumberAxisAlias
 		? Axis1d
 		: A extends typeof vector2AxisTypes[number]
 		? Axis2d
@@ -68,7 +70,11 @@ export class AxisAction<
 	}
 
 	public Clone() {
-		return new AxisAction<A>(this.RawAction);
+		const newAction = new AxisAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

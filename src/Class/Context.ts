@@ -13,6 +13,7 @@ import {
 	ContextOptions,
 	RawActionEntry,
 	GetListener,
+	ActionWithMiddleware,
 } from "../definitions";
 
 import { Sync } from "../Actions";
@@ -32,6 +33,8 @@ const ACTION_UNWRAP_ERROR = "An error occurred while trying to unwrap action.";
 const CHOSEN_ACTION_UNWRAP_ERROR = "Error while unwraping the chosen action. Vec may be empty.";
 const ACTION_REMOVAL_WARNING = debug.traceback("The specified action is not bound to this context.");
 /* eslint-enable prettier/prettier */
+
+const actionDefaultMiddleware = () => true;
 
 const defaultOptions: Options = {
 	ActionGhosting: 0,
@@ -62,7 +65,7 @@ const rustWarn = (...params: Array<unknown>) => {
  * This will ignore the action queue and resolve the action instantly.
  */
 export class Context<O extends ContextOptions> {
-	private actions: HashMap<ActionEntry, ActionListener<Array<unknown>>>;
+	private actions: HashMap<ActionEntry, ActionListener<unknown[]>>;
 
 	private pending: Vec<[ActionEntry, ActionListener]>;
 
@@ -89,13 +92,18 @@ export class Context<O extends ContextOptions> {
 		this.queue = new ActionQueue();
 	}
 
-	private _ConnectAction<A extends RawActionEntry>(action: ActionEntry<A>) {
+	private _ConnectAction<R extends RawActionEntry, A extends ActionEntry<R>>(action: A) {
 		action.SetContext(this);
 		const connection = ActionConnection.From(action);
 
 		connection.Triggered((_, ...args) => {
-			if (!action.IsLocked) {
-				this._Check<A>(action, ...args);
+			const middleware =
+				(action as unknown as ActionWithMiddleware<A>).Middleware ??
+				actionDefaultMiddleware;
+			const result = middleware(action as never);
+
+			if (Promise.is(result) ? result.await()[0] : result) {
+				this._Check<R>(action, ...args);
 			}
 		});
 
@@ -104,13 +112,19 @@ export class Context<O extends ContextOptions> {
 		});
 	}
 
-	private _Check<A extends RawActionEntry>(action: ActionEntry<A>, ...args: Array<unknown>) {
+	private _Check<A extends RawActionEntry>(action: ActionEntry<A>, ...args: unknown[]) {
 		const { actions, pending, queue } = this;
-		const { RunSynchronously: isSync, OnBefore, ActionGhosting: ghostingCap } = this.Options;
+		const {
+			RunSynchronously: runSync,
+			OnBefore,
+			ActionGhosting: ghostingCap,
+		} = this.Options;
 		const listener = () => actions.get(action).expect(ACTION_UNWRAP_ERROR)(...args);
-		const result = OnBefore();
+		const result = runSync ? true : OnBefore();
 
 		if (Promise.is(result) ? result.await()[0] : result) {
+			task.spawn((action as unknown as { OnTriggered: () => void }).OnTriggered);
+
 			pending.push([action, listener]);
 
 			if (this.isPending) return;
@@ -130,31 +144,36 @@ export class Context<O extends ContextOptions> {
 									.filter((rawAction) =>
 										nextAction[0]
 											.GetActiveInputs()
-											.some(
-												(r) =>
-													rawAction ===
+											.every(
+												(
 													r,
+													idx,
+												) =>
+													rawAction ===
+														r &&
+													i ===
+														idx,
 											),
 									)
 									.size()
 							: 0;
 					})
-					.fold(0, (acc, i) => acc + i);
+					.sum();
 
-				if (ghostingCap <= 0 || ghostingLevel <= ghostingCap) {
+				if (ghostingCap <= 0 || ghostingLevel < ghostingCap) {
 					const [chosenAction, chosenListener] = pending
 						.iter()
 						.maxByKey(([x]) => x.GetActiveInputs().size())
 						.expect(CHOSEN_ACTION_UNWRAP_ERROR);
 
 					if (
-						isSync === true ||
+						runSync ||
 						t.isEntryOfType(chosenAction, "SynchronousAction")
 					) {
-						chosenListener();
+						task.spawn(chosenListener);
 					} else if (
 						!queue.Entries.iter().any(
-							({ action: x }) => action === x,
+							({ action: x }) => chosenAction === x,
 						)
 					) {
 						queue.Add(chosenAction, chosenListener);
@@ -191,12 +210,12 @@ export class Context<O extends ContextOptions> {
 		const { actions } = this;
 
 		if (t.isAction(action)) {
-			this._ConnectAction<R>(action);
+			this._ConnectAction(action);
 			actions.insert(action, listener as never);
 		} else {
 			const actionEntry = transformAction<R>(action);
 
-			this._ConnectAction<R>(actionEntry);
+			this._ConnectAction(actionEntry);
 			actions.insert(actionEntry, listener as never);
 		}
 
@@ -205,12 +224,31 @@ export class Context<O extends ContextOptions> {
 
 	/**
 	 * Registers a synchronous action into the context.
+	 *
+	 * Sugar for:
+	 * ```ts
+	 * context.Bind(new Sync(action), () => { ... });
+	 * ```
 	 */
 	public BindSync<R extends RawActionEntry, A extends ActionLike<R>>(
 		action: A | ActionLikeArray<R>,
 		listener: GetListener<A>,
 	) {
-		return this.Bind(new Sync(action), listener as never);
+		type M = {
+			Middleware: (x: defined) => boolean;
+			DefaultMiddleware: () => true;
+		};
+
+		const sync = new Sync(action);
+		const actionWithMiddleware = action as unknown as M;
+		const actionMiddleware = actionWithMiddleware.Middleware;
+
+		if (actionMiddleware) {
+			(sync as unknown as M).Middleware = actionMiddleware;
+			actionWithMiddleware.Middleware = actionDefaultMiddleware;
+		}
+
+		return this.Bind(sync, listener as never);
 	}
 
 	/**

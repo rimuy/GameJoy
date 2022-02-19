@@ -10,7 +10,7 @@ import { transformAction } from "../Misc/TransformAction";
 import * as t from "../Util/TypeChecks";
 
 /**
- * Variant that accepts any action as a parameter and can be updated.
+ * Accepts any action as a parameter and can be updated.
  */
 export class DynamicAction<A extends AnyAction> extends BaseAction {
 	protected Parameters;
@@ -82,7 +82,11 @@ export class DynamicAction<A extends AnyAction> extends BaseAction {
 	}
 
 	public Clone() {
-		return new DynamicAction<A>(this.RawAction);
+		const newAction = new DynamicAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

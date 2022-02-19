@@ -12,7 +12,7 @@ import { isOptional } from "../Misc/IsOptional";
 import * as t from "../Util/TypeChecks";
 
 /**
- * Variant that requires all of its entries to be active in a specific order for it to trigger.
+ * Requires all of its entries to be active in a specific order for it to trigger.
  */
 export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 	private queue: Vec<ActionLike<A> | ActionLikeArray<A>>;
@@ -106,7 +106,11 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 	}
 
 	public Clone() {
-		return new SequenceAction<A>(this.RawAction);
+		const newAction = new SequenceAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

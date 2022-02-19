@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This update introduces a lot of breaking changes.
 
 ### Added
-* Added four hooks: `useEvent`, `useMiddleware`, `useParameters` and `useThrottle`.
 * Added aliases for mouse buttons and most special characters.
+* Added four hooks: `useEvent`, `useMiddleware`, `useParameters` and `useThrottle`. ([#8](https://github.com/Rimuy/GameJoy/issues/8))
+* Added `KeyboardLayout` context option, which accepts a `LayoutKind` enum item. ([#11](https://github.com/Rimuy/GameJoy/issues/11))
 * Added `LayoutKind` and `GamepadKind` enums.
-* Added `KeyboardLayout` context option, which accepts a `LayoutKind` enum item.
 * Added `extractEnum` utility function.
 * Added `isAxis1d`, `isAxis2d` & `isAxisGyro` type check functions.
 

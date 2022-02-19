@@ -13,6 +13,8 @@ import {
 	Unique,
 } from "./Actions";
 
+import { NumberAxisAlias } from "./Actions/AxisAction";
+
 import aliases from "./Misc/Aliases";
 
 import { axisActionEntries, GamepadKind, unusedKeys } from "./Misc/Entries";
@@ -39,6 +41,8 @@ export type ActionListener<P extends Array<unknown> = []> = (...params: P) => un
 
 export type ActionKey<A extends RawActionEntry> = ActionLike<A> | ActionLikeArray<A>;
 
+export type ActionWithMiddleware<A extends ActionEntry> = A & { Middleware: (action: A) => boolean };
+
 export type Aliases = typeof aliases;
 
 export type AliasKey = Aliases extends ReadonlyMap<infer K, infer _> ? K : never;
@@ -50,9 +54,11 @@ export type AnyAction = AxisActionEntry | RawActionEntry;
 
 export type AxisActionLike = typeof axisActionEntries[number];
 
+type AxisAlias = NumberAxisAlias;
+
 type UnusedKeys = typeof unusedKeys[number];
 
-export type AxisActionEntry = CastsToEnum<AxisActionLike>;
+export type AxisActionEntry = CastsToEnum<AxisActionLike> | AxisAlias;
 
 export type RawAction = Exclude<Enum.KeyCode | Enum.UserInputType, UnusedKeys>;
 

@@ -99,7 +99,11 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 	}
 
 	public Clone() {
-		return new Action<A>(this.RawAction);
+		const newAction = new Action<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 
