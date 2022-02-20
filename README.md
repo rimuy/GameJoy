@@ -8,8 +8,8 @@
 ---
 
 [![CI Status](https://github.com/HylianBasement/gamejoy/workflows/CI/badge.svg)](https://github.com/HylianBasement/gamejoy/actions)
-[![License MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Package](https://badge.fury.io/js/%40rbxts%2Fgamejoy.svg)](https://www.npmjs.com/package/@rbxts/gamejoy)
+[![NPM Package](https://badge.fury.io/js/%40rbxts%2Fgamejoy.svg)](https://www.npmjs.com/package/@rbxts/gamejoy)
+[![Wally Package](https://img.shields.io/badge/wally%20package-2.0.0-red)](https://wally.run/package/rimuy/gamejoy)
 <br/>
 <br/>
 
@@ -33,6 +33,8 @@ After that, just run `wally install`.
 Model files are uploaded to every release as `.rbxmx` files. You can download the file from the [Releases page](https://github.com/HylianBasement/GameJoy/releases) and load it into your project however you see fit.
 
 ## Features
+See [API](API.md) for reference. 
+
 - ### Class-based
     Because action bindings are actually classes, the user has the ability to check whether an action is active or not, and to use its respective methods and events for better manipulation. We want to choose what kind of action we want to use by destructuring `Actions`.
 
@@ -101,40 +103,44 @@ Model files are uploaded to every release as `.rbxmx` files. You can download th
         Events requires identifiers, so that it can be possible to unbind them when needed.
 
         ```js
-        context.Bind(useEvent(CharacterController.Damaged), (oldHealth, health) => {
-                const damage = oldHealth - health;
-                print(`You lost ${damage}HP!`);
+        context
+                .Bind(useEvent(CharacterController.Damaged), (oldHealth, health) => {
+                        const damage = oldHealth - health;
+                        print(`You lost ${damage}HP!`);
 
-                task.wait(0.3); // The player must wait 0.3 seconds before being able to counter-attack.
-        });
-        ```
-
-        ```js
-        context.BindSync(useEvent(RunService.RenderStepped), (delta) => {
-                print(delta);
-        });
+                        task.wait(0.3); // The player must wait 0.3 seconds before being able to counter-attack.
+                })
+                .BindSync(useEvent(RunService.RenderStepped), (delta) => {
+                        print(delta);
+                });
         ```
 - ### Utilitaries
     There are some utilitary functions available, such as typechecks.
 - ### Hooks
-    > TODO
+    Hooks are utilitary functions that returns an action with custom behaviour. One of those hooks can give the ability to bind events using actions, like used above.
+    
+    ```js
+    context.Bind(useEvent(Character.Humanoid.HealthChanged), (health) => {
+        print("New health:", health);
+    });
+    ```
 
-### Raw Actions
+## Raw Actions
 An action entry doesn't necessarily need to be an instantiated class, it could be a string, number or an enum item corresponding to the correct name or value from `Enum.KeyCode` and `Enum.UserInputType`.
 
 ```js
-context.Bind("F", () => {
-        print("F was pressed!");
-});
-
-context.Bind(["Q", "E"], () => {
-        print("Q or E was pressed!");
-});
+context
+        .Bind("F", () => {
+                print("F was pressed!");
+        })
+        .Bind(["Q", "E"], () => {
+                print("Q or E was pressed!");
+        });
 ```
 
 Of course, you won't be able to use any event that you could use with an action object.
 
-### Filtering multiple inputs
+## Filtering multiple inputs
 Sometimes don't you want two or more inputs to trigger the same action? Well, if so, `Union` is what you want!
 It accepts an array of action-like entries as a parameter.
 
