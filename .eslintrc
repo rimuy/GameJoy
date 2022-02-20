@@ -64,7 +64,8 @@
 			{
 				"selector": "classMethod",
 				"modifiers": ["private"],
-				"format": ["PascalCase"]
+				"format": ["PascalCase"],
+				"leadingUnderscore": "allow"
 			},
 			{
 				"selector": ["variable", "parameter", "memberLike"],

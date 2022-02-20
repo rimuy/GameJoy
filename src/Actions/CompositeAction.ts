@@ -2,22 +2,25 @@ import { HashMap } from "@rbxts/rust-classes";
 import type Signal from "@rbxts/signal";
 
 import { ActionConnection } from "../Class/ActionConnection";
-import { ActionEntry, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+import { ActionEntry, ActionLikeArray, RawActionEntry } from "../definitions";
 import { BaseAction } from "../Class/BaseAction";
 
 import { transformAction } from "../Misc/TransformAction";
 import { isOptional } from "../Misc/IsOptional";
 
 /**
- * Variant that requires all of its entries to be active for it to trigger.
+ * Requires all of its entries to be active for it to trigger.
  */
 export class CompositeAction<A extends RawActionEntry> extends BaseAction {
+	protected Parameters;
+
 	private status: HashMap<ActionEntry<A>, boolean>;
 
 	public constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
 
 		const status = (this.status = HashMap.empty());
+		this.Parameters = new Array<unknown>();
 
 		for (const entry of this.RawAction) {
 			const action = transformAction<A>(entry);
@@ -57,6 +60,18 @@ export class CompositeAction<A extends RawActionEntry> extends BaseAction {
 				action.Destroy();
 			});
 		});
+	}
+
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
+	public Clone() {
+		const newAction = new CompositeAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

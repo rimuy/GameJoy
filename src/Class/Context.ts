@@ -1,5 +1,5 @@
 import { RunService } from "@rbxts/services";
-import { HashMap, Option, Result, Vec } from "@rbxts/rust-classes";
+import { type Option, HashMap, Vec } from "@rbxts/rust-classes";
 
 import { ActionQueue } from "./ActionQueue";
 
@@ -12,11 +12,13 @@ import {
 	ActionListener,
 	ContextOptions,
 	RawActionEntry,
-	SignalWrapper,
-	SignalConnection,
-} from "../Definitions/Types";
+	GetListener,
+	ActionWithMiddleware,
+} from "../definitions";
 
-import { Manual, Sync } from "../Actions";
+import { Sync } from "../Actions";
+
+import { LayoutKind } from "../Misc/KeyboardLayout";
 
 import { transformAction } from "../Misc/TransformAction";
 
@@ -26,20 +28,17 @@ interface Options extends Required<Omit<ContextOptions, "Process">> {
 	Process?: boolean;
 }
 
-const { ok: Ok } = Result;
-const { some: Some } = Option;
-
 /* eslint-disable prettier/prettier */
 const ACTION_UNWRAP_ERROR = "An error occurred while trying to unwrap action.";
 const CHOSEN_ACTION_UNWRAP_ERROR = "Error while unwraping the chosen action. Vec may be empty.";
 const ACTION_REMOVAL_WARNING = debug.traceback("The specified action is not bound to this context.");
-const SIGNAL_NO_CONNECT_METHOD_ERROR = debug.traceback("Signal wrapper doesn't contain a valid connect method.");
-const SIGNAL_CONNECTION_NO_DISCONNECT_METHOD_ERROR = debug.traceback("Connection doesn't contain a valid disconnect method.");
-const EVENT_NOT_BOUND_WARNING = (event: string) => debug.traceback(`"${event}" event is not bound to this context.`);
 /* eslint-enable prettier/prettier */
+
+const actionDefaultMiddleware = () => true;
 
 const defaultOptions: Options = {
 	ActionGhosting: 0,
+	KeyboardLayout: LayoutKind.QWERTY,
 	OnBefore: () => true,
 	RunSynchronously: false,
 };
@@ -66,12 +65,7 @@ const rustWarn = (...params: Array<unknown>) => {
  * This will ignore the action queue and resolve the action instantly.
  */
 export class Context<O extends ContextOptions> {
-	private actions: HashMap<ActionEntry, ActionListener<Array<unknown>>>;
-
-	private events: HashMap<
-		string,
-		{ action: Manual | Sync<RawActionEntry>; connection: SignalConnection }
-	>;
+	private actions: HashMap<ActionEntry, ActionListener<unknown[]>>;
 
 	private pending: Vec<[ActionEntry, ActionListener]>;
 
@@ -93,81 +87,23 @@ export class Context<O extends ContextOptions> {
 		this.Options = { ...defaultOptions, ...options };
 
 		this.actions = HashMap.empty();
-		this.events = HashMap.empty();
 		this.pending = Vec.vec();
 		this.isPending = false;
 		this.queue = new ActionQueue();
 	}
 
-	private ConnectAction<A extends RawActionEntry>(action: ActionEntry<A>) {
-		const { actions, pending, queue } = this;
-		const { RunSynchronously: isSync, OnBefore, ActionGhosting: ghostingCap } = this.Options;
-
+	private _ConnectAction<R extends RawActionEntry, A extends ActionEntry<R>>(action: A) {
 		action.SetContext(this);
 		const connection = ActionConnection.From(action);
 
 		connection.Triggered((_, ...args) => {
-			const listener = () => actions.get(action).expect(ACTION_UNWRAP_ERROR)(...args);
+			const middleware =
+				(action as unknown as ActionWithMiddleware<A>).Middleware ??
+				actionDefaultMiddleware;
+			const result = middleware(action as never);
 
-			if (OnBefore() === true) {
-				pending.push([action, listener]);
-
-				if (this.isPending) return;
-
-				this.isPending = true;
-
-				task.defer(() => {
-					const ghostingLevel = pending
-						.iter()
-						.enumerate()
-						.map(([i, [x]]) => {
-							const nextAction = pending.asPtr()[i + 1];
-
-							return nextAction
-								? x
-										.GetActiveInputs()
-										.filter((rawAction) =>
-											nextAction[0]
-												.GetActiveInputs()
-												.some(
-													(
-														r,
-													) =>
-														rawAction ===
-														r,
-												),
-										)
-										.size()
-								: 0;
-						})
-						.fold(0, (acc, i) => acc + i);
-
-					if (ghostingCap <= 0 || ghostingLevel <= ghostingCap) {
-						const [chosenAction, chosenListener] = pending
-							.iter()
-							.maxByKey(([x]) => x.GetActiveInputs().size())
-							.expect(CHOSEN_ACTION_UNWRAP_ERROR);
-
-						if (
-							isSync === true ||
-							t.actionEntryIs(
-								chosenAction,
-								"SynchronousAction",
-							)
-						) {
-							chosenListener();
-						} else if (
-							!queue.Entries.iter().any(
-								({ action: x }) => action === x,
-							)
-						) {
-							queue.Add(chosenAction, chosenListener);
-						}
-					}
-
-					pending.clear();
-					this.isPending = false;
-				});
+			if (Promise.is(result) ? result.await()[0] : result) {
+				this._Check<R>(action, ...args);
 			}
 		});
 
@@ -176,7 +112,81 @@ export class Context<O extends ContextOptions> {
 		});
 	}
 
-	private RemoveAction(actionOpt: Option<ActionEntry>) {
+	private _Check<A extends RawActionEntry>(action: ActionEntry<A>, ...args: unknown[]) {
+		const { actions, pending, queue } = this;
+		const {
+			RunSynchronously: runSync,
+			OnBefore,
+			ActionGhosting: ghostingCap,
+		} = this.Options;
+		const listener = () => actions.get(action).expect(ACTION_UNWRAP_ERROR)(...args);
+		const result = runSync ? true : OnBefore();
+
+		if (Promise.is(result) ? result.await()[0] : result) {
+			task.spawn((action as unknown as { OnTriggered: () => void }).OnTriggered);
+
+			pending.push([action, listener]);
+
+			if (this.isPending) return;
+
+			this.isPending = true;
+
+			task.defer(() => {
+				const ghostingLevel = pending
+					.iter()
+					.enumerate()
+					.map(([i, [x]]) => {
+						const nextAction = pending.asPtr()[i + 1];
+
+						return nextAction
+							? x
+									.GetActiveInputs()
+									.filter((rawAction) =>
+										nextAction[0]
+											.GetActiveInputs()
+											.every(
+												(
+													r,
+													idx,
+												) =>
+													rawAction ===
+														r &&
+													i ===
+														idx,
+											),
+									)
+									.size()
+							: 0;
+					})
+					.sum();
+
+				if (ghostingCap <= 0 || ghostingLevel < ghostingCap) {
+					const [chosenAction, chosenListener] = pending
+						.iter()
+						.maxByKey(([x]) => x.GetActiveInputs().size())
+						.expect(CHOSEN_ACTION_UNWRAP_ERROR);
+
+					if (
+						runSync ||
+						t.isEntryOfType(chosenAction, "SynchronousAction")
+					) {
+						task.spawn(chosenListener);
+					} else if (
+						!queue.Entries.iter().any(
+							({ action: x }) => chosenAction === x,
+						)
+					) {
+						queue.Add(chosenAction, chosenListener);
+					}
+				}
+
+				pending.clear();
+				this.isPending = false;
+			});
+		}
+	}
+
+	private _RemoveAction(actionOpt: Option<ActionEntry>) {
 		return actionOpt.okOr(rustWarn(ACTION_REMOVAL_WARNING)).map((action) => {
 			this.actions.remove(action);
 			action.Destroy();
@@ -195,81 +205,50 @@ export class Context<O extends ContextOptions> {
 	 */
 	public Bind<R extends RawActionEntry, A extends ActionLike<R>>(
 		action: A | ActionLikeArray<R>,
-		listener: A extends Manual<infer P> ? ActionListener<P> : ActionListener,
+		listener: GetListener<A>,
 	) {
 		const { actions } = this;
 
 		if (t.isAction(action)) {
-			this.ConnectAction<R>(action);
-			actions.insert(action, listener);
+			this._ConnectAction(action);
+			actions.insert(action, listener as never);
 		} else {
 			const actionEntry = transformAction<R>(action);
 
-			this.ConnectAction<R>(actionEntry);
-			actions.insert(actionEntry, listener);
+			this._ConnectAction(actionEntry);
+			actions.insert(actionEntry, listener as never);
 		}
 
 		return this;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	private _BindEvent<P extends Array<unknown>>(
-		name: string,
-		event: SignalWrapper<(...args: P) => void>,
-		listener: ActionListener<P>,
-		isSync: boolean,
+	/**
+	 * Registers a synchronous action into the context.
+	 *
+	 * Sugar for:
+	 * ```ts
+	 * context.Bind(new Sync(action), () => { ... });
+	 * ```
+	 */
+	public BindSync<R extends RawActionEntry, A extends ActionLike<R>>(
+		action: A | ActionLikeArray<R>,
+		listener: GetListener<A>,
 	) {
-		const { events } = this;
-		const action = new Manual<P>();
-		const onEvent = (...args: P) => action.Trigger(...args);
+		type M = {
+			Middleware: (x: defined) => boolean;
+			DefaultMiddleware: () => true;
+		};
 
-		let connection: SignalConnection;
+		const sync = new Sync(action);
+		const actionWithMiddleware = action as unknown as M;
+		const actionMiddleware = actionWithMiddleware.Middleware;
 
-		if ("Connect" in event) {
-			connection = event.Connect(onEvent);
-		} else if ("connect" in event) {
-			connection = event.connect(onEvent);
-		} else {
-			error(SIGNAL_NO_CONNECT_METHOD_ERROR);
+		if (actionMiddleware) {
+			(sync as unknown as M).Middleware = actionMiddleware;
+			actionWithMiddleware.Middleware = actionDefaultMiddleware;
 		}
 
-		const entry = { action: isSync ? new Sync(action) : action, connection };
-
-		events.tryInsert(name, entry)
-			.orElse(() => {
-				this.UnbindEvent(name);
-				return Ok(entry);
-			})
-			.andWith((e) => {
-				this.Bind(e.action, listener);
-				return Ok(e);
-			});
-	}
-
-	/**
-	 * Registers an event into the context.
-	 */
-	public BindEvent<P extends Array<unknown>>(
-		name: string,
-		event: SignalWrapper<(...args: P) => void>,
-		listener: ActionListener<P>,
-	) {
-		this._BindEvent<P>(name, event, listener, false);
-
-		return this;
-	}
-
-	/**
-	 * Registers a synchronous event into the context.
-	 */
-	public BindSyncEvent<P extends Array<unknown>>(
-		name: string,
-		event: SignalWrapper<(...args: P) => void>,
-		listener: ActionListener<P>,
-	) {
-		this._BindEvent<P>(name, event, listener, true);
-
-		return this;
+		return this.Bind(sync, listener as never);
 	}
 
 	/**
@@ -279,9 +258,9 @@ export class Context<O extends ContextOptions> {
 		const { actions } = this;
 
 		if (t.isAction(action)) {
-			this.RemoveAction(actions.getKeyValue(action).map(([x]) => x));
+			this._RemoveAction(actions.getKeyValue(action).map(([x]) => x));
 		} else if (t.isRawAction(action)) {
-			this.RemoveAction(
+			this._RemoveAction(
 				actions.keys().find(({ RawAction }) => RawAction === (action as never)),
 			);
 		}
@@ -290,64 +269,12 @@ export class Context<O extends ContextOptions> {
 	}
 
 	/**
-	 * Removes an event connection from the context.
-	 */
-	public UnbindEvent(name: string) {
-		const { events } = this;
-
-		events.removeEntry(name)
-			.andWith(([, { action, connection }]) => {
-				if ("Disconnect" in connection) {
-					connection.Disconnect();
-				} else if ("disconnect" in connection) {
-					connection.disconnect();
-				} else {
-					error(SIGNAL_CONNECTION_NO_DISCONNECT_METHOD_ERROR);
-				}
-
-				events.remove(name);
-				this.Unbind(action);
-
-				return Some({});
-			})
-			.okOr(rustWarn(EVENT_NOT_BOUND_WARNING(name)));
-
-		return this;
-	}
-
-	/**
 	 * Removes all bound actions from the context.
 	 */
-	public UnbindAllActions() {
-		const { actions, events } = this;
-
-		actions.keys()
-			.filter(
-				(action): action is ActionEntry<RawActionEntry> =>
-					!events.values().any(({ action: x }) => x === action),
-			)
-			.forEach((action) => this.Unbind(action));
-
-		return this;
-	}
-
-	/**
-	 * Removes all bound events from the context.
-	 */
-	public UnbindAllEvents() {
-		const { events } = this;
-
-		events.keys().forEach((name) => this.UnbindEvent(name));
-
-		return this;
-	}
-
-	/**
-	 * Removes everything that is bound to the context.
-	 */
 	public UnbindAll() {
-		this.UnbindAllActions();
-		this.UnbindAllEvents();
+		const { actions } = this;
+
+		actions.keys().forEach((action) => this.Unbind(action));
 
 		return this;
 	}

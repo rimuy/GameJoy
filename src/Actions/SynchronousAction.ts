@@ -1,6 +1,6 @@
 import type Signal from "@rbxts/signal";
 
-import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry } from "../definitions";
 
 import { BaseAction } from "../Class/BaseAction";
 import { ActionConnection } from "../Class/ActionConnection";
@@ -8,12 +8,16 @@ import { ActionConnection } from "../Class/ActionConnection";
 import { transformAction } from "../Misc/TransformAction";
 
 /**
- * Variant that synchronizes its action when placed on the highest hierarchy.
+ * Synchronizes its action when placed on the highest hierarchy.
  * Useful when the `RunSynchronously` option is disabled but you want a specific action to be executed synchronously.
  */
 export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
+	protected Parameters;
+
 	public constructor(public readonly RawAction: ActionLike<A> | ActionLikeArray<A>) {
 		super();
+
+		this.Parameters = new Array<unknown>();
 	}
 
 	protected OnConnected() {
@@ -33,6 +37,22 @@ export class SynchronousAction<A extends RawActionEntry> extends BaseAction {
 			}
 			(this.Changed as Signal).Fire();
 		});
+
+		ActionConnection.From(this).Destroyed(() => {
+			action.Destroy();
+		});
+	}
+
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
+	public Clone() {
+		const newAction = new SynchronousAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

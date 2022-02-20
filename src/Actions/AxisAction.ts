@@ -1,29 +1,49 @@
 import type Signal from "@rbxts/signal";
 
-import { AxisActionEntry } from "../Definitions/Types";
+import { AxisActionEntry, Axis1d, Axis2d, Gyroscope, MemberType } from "../definitions";
 
 import { Action } from "./Action";
 import { BaseAction } from "../Class/BaseAction";
 
 import { ActionConnection } from "../Class/ActionConnection";
 
+import { GamepadKind } from "../Misc/Entries";
+
+import type { numberAxisTypes, vector2AxisTypes } from "../Misc/Entries";
+
+import { tuple } from "../Misc/Tuple";
+
+export type NumberAxisAlias = "L1" | "R1" | "L2" | "R2";
+
 /**
- * Variant that provides support for inputs that have a continuous range.
+ * Provides support for inputs that have a continuous range.
  * The action is triggered everytime the input is changed.
  */
-export class AxisAction<A extends AxisActionEntry> extends BaseAction {
-	public readonly Delta;
+export class AxisAction<
+	A extends AxisActionEntry,
+	V = A extends typeof numberAxisTypes[number] | NumberAxisAlias
+		? Axis1d
+		: A extends typeof vector2AxisTypes[number]
+		? Axis2d
+		: A extends CastsToEnum<Enum.UserInputType.Gyro>
+		? Gyroscope
+		: never,
+> extends BaseAction {
+	protected Parameters;
 
-	public readonly Position;
+	private readonly Delta: MemberType<V>;
 
-	public readonly KeyCode: Enum.KeyCode;
+	private readonly Position: MemberType<V>;
+
+	private readonly Gamepad: GamepadKind;
 
 	public constructor(public readonly RawAction: A) {
 		super();
 
-		this.Delta = new Vector3();
-		this.Position = new Vector3();
-		this.KeyCode = Enum.KeyCode.Unknown;
+		this.Parameters = new Array<unknown>();
+		this.Delta = {} as MemberType<V>;
+		this.Position = {} as MemberType<V>;
+		this.Gamepad = GamepadKind.None;
 	}
 
 	protected OnConnected() {
@@ -36,13 +56,25 @@ export class AxisAction<A extends AxisActionEntry> extends BaseAction {
 		connection.Changed(() => (this.Changed as Signal).Fire());
 
 		thisConnection.Changed(() => {
-			this.SetTriggered(true);
+			this.SetTriggered(true, false, ...this._GetLastParameters());
 			this.SetTriggered(false, true);
 		});
 
 		thisConnection.Destroyed(() => {
 			action.Destroy();
 		});
+	}
+
+	protected _GetLastParameters() {
+		return tuple(this.Position, this.Delta, this.Gamepad);
+	}
+
+	public Clone() {
+		const newAction = new AxisAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

@@ -1,7 +1,7 @@
 import { Vec } from "@rbxts/rust-classes";
 import Signal from "@rbxts/signal";
 
-import { ActionLike, ActionLikeArray, RawActionEntry, ConsumerSignal } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry, ConsumerSignal } from "../definitions";
 
 import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
@@ -12,18 +12,21 @@ import { isOptional } from "../Misc/IsOptional";
 import * as t from "../Util/TypeChecks";
 
 /**
- * Variant that requires all of its entries to be active in a specific order for it to trigger.
+ * Requires all of its entries to be active in a specific order for it to trigger.
  */
 export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 	private queue: Vec<ActionLike<A> | ActionLikeArray<A>>;
 
 	private canCancel;
 
+	protected Parameters;
+
 	public readonly Cancelled: ConsumerSignal;
 
 	public constructor(public readonly RawAction: ActionLikeArray<A>) {
 		super();
 		this.Cancelled = new Signal();
+		this.Parameters = new Array<unknown>();
 
 		const rawActions = RawAction.filter(
 			(action) => !t.isAction(action) || !isOptional(action),
@@ -96,6 +99,18 @@ export class SequenceAction<A extends RawActionEntry> extends BaseAction {
 				action.Destroy();
 			});
 		}
+	}
+
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
+	public Clone() {
+		const newAction = new SequenceAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

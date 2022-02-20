@@ -6,7 +6,7 @@ import {
 	RawActionEntry,
 	ConsumerSignal,
 	SignalWithParams,
-} from "../Definitions/Types";
+} from "../definitions";
 
 import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
@@ -17,14 +17,17 @@ import aliases from "../Misc/Aliases";
  * Object that holds information about inputs that can be performed by the player while in a context.
  */
 export class Action<A extends RawActionEntry> extends BaseAction {
+	protected Parameters;
+
 	public readonly Began: ConsumerSignal<(processed: boolean) => void>;
 
 	public readonly Ended: ConsumerSignal<(processed: boolean) => void>;
 
 	public readonly Cancelled: ConsumerSignal;
 
-	public constructor(public readonly RawAction: A, private options: ActionOptions = {}) {
+	public constructor(public readonly RawAction: A, private readonly options: ActionOptions = {}) {
 		super();
+		this.Parameters = new Array<unknown>();
 		this.Began = new Signal();
 		this.Ended = new Signal();
 		this.Cancelled = new Signal();
@@ -60,22 +63,20 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 				resolve(timesTriggered >= repeatTimes);
 			})
 				.timeout(timing)
-				.then(
-					(isCompleted) => {
-						if (isCompleted) {
-							timesTriggered = 0;
-							cancelled = false;
-							this.SetTriggered(true);
-						}
-					},
-					() => {
+				.then((isCompleted) => {
+					if (isCompleted) {
 						timesTriggered = 0;
-						if (cancelled) {
-							(this.Cancelled as Signal).Fire();
-							this.SetTriggered(false);
-						}
-					},
-				);
+						cancelled = false;
+						this.SetTriggered(true);
+					}
+				})
+				.catch(() => {
+					timesTriggered = 0;
+					if (cancelled) {
+						(this.Cancelled as Signal).Fire();
+						this.SetTriggered(false);
+					}
+				});
 		});
 
 		connection.Ended(() => {
@@ -91,6 +92,18 @@ export class Action<A extends RawActionEntry> extends BaseAction {
 		});
 
 		connection.Destroyed(() => newInputSignal.Destroy());
+	}
+
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
+	public Clone() {
+		const newAction = new Action<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

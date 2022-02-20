@@ -2,9 +2,19 @@ import Signal from "@rbxts/signal";
 import { UserInputService as IS } from "@rbxts/services";
 import { Bin } from "@rbxts/bin";
 
-import { ActionEntry, RawActionEntry, SignalWithParams } from "../Definitions/Types";
+import {
+	ActionEntry,
+	AxisActionEntry,
+	AvailableAxisTypes,
+	RawActionEntry,
+	SignalWithParams,
+} from "../definitions";
 
 import * as t from "../Util/TypeChecks";
+
+import { GamepadKind } from "../Misc/Entries";
+
+import { translateKeyCode } from "../Misc/KeyboardLayout";
 
 function checkInputs(
 	action: ActionEntry,
@@ -13,19 +23,14 @@ function checkInputs(
 	processed: boolean,
 	callback: (processed: boolean, ...args: Array<unknown>) => void,
 ) {
-	const context = action.Context;
+	const { Process } = action.Context!.Options;
+	const rawAction = action.RawAction as RawActionEntry;
 
-	if (context) {
-		const { Process } = context.Options;
-
-		const rawAction = action.RawAction as RawActionEntry;
-
-		if (
-			t.isActionEqualTo(rawAction, keyCode, inputType) &&
-			(Process === undefined || Process === processed)
-		) {
-			callback(processed);
-		}
+	if (
+		t.isActionEqualTo(rawAction, keyCode, inputType) &&
+		(Process === undefined || Process === processed)
+	) {
+		callback(processed);
 	}
 }
 
@@ -38,8 +43,21 @@ export class ActionConnection {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private Connect(signal: Signal, callback: (...args: Array<any>) => void) {
+	private _Connect(signal: Signal, callback: (...args: Array<any>) => void) {
 		this.bin.add(signal.Connect(callback));
+	}
+
+	private _GetAxisVectorType(
+		entry: AxisActionEntry,
+		{ X = 0, Y = 0, Z = 0 }: { X?: number; Y?: number; Z?: number },
+	) {
+		if (t.isAxis2d(entry)) return new Vector2(X, Y);
+		else if (t.isAxis1d(entry)) return Z;
+		else if (t.isAxisGyro(entry) && IS.GyroscopeEnabled) return IS.GetDeviceRotation()[1];
+	}
+
+	private _TranslateKeyCode(keyCode: Enum.KeyCode) {
+		return translateKeyCode(keyCode, this.Action.Context!.Options.KeyboardLayout);
 	}
 
 	public static From(action: ActionEntry) {
@@ -56,12 +74,12 @@ export class ActionConnection {
 	}
 
 	public Began(callback: (processed: boolean) => void) {
-		if (t.actionEntryIs(this.Action, "Action")) {
-			this.Connect(this.Action.Began as unknown as SignalWithParams, callback);
+		if (t.isEntryOfType(this.Action, "Action") && this.Action.IsBound()) {
+			this._Connect(this.Action.Began as unknown as SignalWithParams, callback);
 			this.bin.add(
 				IS.InputBegan.Connect(({ KeyCode, UserInputType }, processed) =>
 					this.SendInputRequest(
-						KeyCode,
+						this._TranslateKeyCode(KeyCode),
 						UserInputType,
 						processed,
 						callback,
@@ -72,12 +90,12 @@ export class ActionConnection {
 	}
 
 	public Ended(callback: (processed: boolean) => void) {
-		if (t.actionEntryIs(this.Action, "Action")) {
-			this.Connect(this.Action.Ended as unknown as SignalWithParams, callback);
+		if (t.isEntryOfType(this.Action, "Action") && this.Action.IsBound()) {
+			this._Connect(this.Action.Ended as unknown as SignalWithParams, callback);
 			this.bin.add(
 				IS.InputEnded.Connect(({ KeyCode, UserInputType }, processed) =>
 					this.SendInputRequest(
-						KeyCode,
+						this._TranslateKeyCode(KeyCode),
 						UserInputType,
 						processed,
 						callback,
@@ -88,39 +106,59 @@ export class ActionConnection {
 	}
 
 	public Destroyed(callback: () => void) {
-		this.Connect(this.Action.Destroyed as Signal, callback);
+		this._Connect(this.Action.Destroyed as Signal, callback);
 	}
 
-	public Triggered(callback: (processed?: boolean, ...args: Array<unknown>) => void) {
-		this.Connect(this.Action.Triggered as SignalWithParams, callback);
+	public Triggered(callback: (processed: boolean, ...args: Array<unknown>) => void) {
+		this._Connect(this.Action.Triggered as unknown as SignalWithParams, callback);
 	}
 
-	public Released(callback: (processed?: boolean) => void) {
-		this.Connect(this.Action.Released as unknown as SignalWithParams, callback);
+	public Released(callback: (processed: boolean) => void) {
+		this._Connect(this.Action.Released as unknown as SignalWithParams, callback);
 	}
 
 	public Changed(callback: () => void) {
 		const { Action } = this;
 
-		this.Connect((Action as unknown as { Changed: Signal }).Changed, callback);
+		this._Connect((Action as unknown as { Changed: Signal }).Changed, callback);
 
-		if (t.actionEntryIs(Action, "AxisAction")) {
+		if (t.isEntryOfType(Action, "AxisAction")) {
 			this.bin.add(
 				IS.InputChanged.Connect(
 					({ Delta, KeyCode, UserInputType, Position }, processed) => {
+						if (!this.Action.IsBound()) return;
+
+						const axisEntry = Action.RawAction;
+						const keyCode = this._TranslateKeyCode(KeyCode);
+
 						if (
 							t.isActionEqualTo(
-								Action.RawAction,
-								KeyCode,
+								axisEntry,
+								keyCode,
 								UserInputType,
 							)
 						) {
-							(Action.Delta as Vector3) = Delta;
-							(Action.Position as Vector3) = Position;
-							(Action.KeyCode as Enum.KeyCode) = KeyCode;
+							const actionMembers = Action as unknown as {
+								Delta: AvailableAxisTypes;
+								Position: AvailableAxisTypes;
+								Gamepad: GamepadKind;
+							};
+
+							actionMembers.Delta = this._GetAxisVectorType(
+								axisEntry,
+								Delta,
+							);
+							actionMembers.Position = this._GetAxisVectorType(
+								axisEntry,
+								Position,
+							);
+							actionMembers.Gamepad = (UserInputType.Name in
+							(GamepadKind as { [x: string]: unknown })
+								? UserInputType.Name
+								: "None") as unknown as GamepadKind;
 
 							this.SendInputRequest(
-								KeyCode,
+								keyCode,
 								UserInputType,
 								processed,
 								callback,
@@ -134,7 +172,7 @@ export class ActionConnection {
 
 	public Cancelled(callback: () => void) {
 		if (t.isCancellableAction(this.Action)) {
-			this.Connect(this.Action.Cancelled as Signal, callback);
+			this._Connect(this.Action.Cancelled as Signal, callback);
 		}
 	}
 

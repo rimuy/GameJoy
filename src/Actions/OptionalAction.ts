@@ -1,6 +1,6 @@
 import type Signal from "@rbxts/signal";
 
-import { ActionLike, ActionLikeArray, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, RawActionEntry } from "../definitions";
 
 import { ActionConnection } from "../Class/ActionConnection";
 import { BaseAction } from "../Class/BaseAction";
@@ -8,12 +8,16 @@ import { BaseAction } from "../Class/BaseAction";
 import { transformAction } from "../Misc/TransformAction";
 
 /**
- * Variant that is used to act as a "ghost" action when placed inside objects that accepts multiple entries.
+ * Acts as a "ghost" action when placed inside objects that accepts multiple entries.
  * Its parent action can trigger without the need of the action being active, and will trigger again once the action activates.
  */
 export class OptionalAction<A extends RawActionEntry> extends BaseAction {
+	protected Parameters;
+
 	public constructor(public readonly RawAction: ActionLike<A> | ActionLikeArray<A>) {
 		super();
+
+		this.Parameters = new Array<unknown>();
 	}
 
 	protected OnConnected() {
@@ -35,6 +39,18 @@ export class OptionalAction<A extends RawActionEntry> extends BaseAction {
 		ActionConnection.From(this).Destroyed(() => {
 			action.Destroy();
 		});
+	}
+
+	protected _GetLastParameters() {
+		return [] as LuaTuple<[]>;
+	}
+
+	public Clone() {
+		const newAction = new OptionalAction<A>(this.RawAction);
+		newAction.Middleware = this.Middleware;
+		newAction.OnTriggered = this.OnTriggered;
+
+		return newAction;
 	}
 }
 

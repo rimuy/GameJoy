@@ -1,6 +1,6 @@
 import type { Action as ActionT, Axis as AxisT, Union as UnionT } from "../Actions";
 
-import { ActionLike, ActionLikeArray, AxisActionEntry, RawActionEntry } from "../Definitions/Types";
+import { ActionLike, ActionLikeArray, AxisActionEntry, RawActionEntry } from "../definitions";
 
 import * as t from "../Util/TypeChecks";
 
